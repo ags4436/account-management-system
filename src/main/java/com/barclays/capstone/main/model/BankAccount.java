@@ -4,19 +4,22 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.springframework.stereotype.Service;
+
+@Service
 @Entity
 @Table(name = "bank_account")
 public class BankAccount {
 	
 	@Id
-	private long accountNumber;
+	private String accountNumber;
 	private int customerId;
 	private int currentBalance;
 	
-	public long getAccountNumber() {
+	public String getAccountNumber() {
 		return accountNumber;
 	}
-	public void setAccountNumber(long accountNumber) {
+	public void setAccountNumber(String accountNumber) {
 		this.accountNumber = accountNumber;
 	}
 	public int getCustomerId() {
