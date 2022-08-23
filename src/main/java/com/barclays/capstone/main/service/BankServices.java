@@ -76,5 +76,10 @@ public class BankServices {
 		//email.sendEmail("va4436@srmist.edu.in","TestMail","Email Testing!");
 		return accountNumber;
 	}
+	
+	public List<BankAccount> viewAccount(String pancard) {
+		return repo.viewAccounts(pancard);
+	}
+
 
 }

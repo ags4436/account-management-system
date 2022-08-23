@@ -71,6 +71,12 @@ public class BankController {
 		return operations.createAccount(customer);
 	}
 	
-	
+	@GetMapping("/viewAccounts")
+	public ResponseEntity<List<BankAccount>> viewAccounts(@RequestParam String pancard) {
+		logger.info("Showing linked accounts of user......................");
+		List<BankAccount> Accounts = operations.viewAccount(pancard);
+		return new ResponseEntity<List<BankAccount>>(Accounts, HttpStatus.OK);
+	}
+
 
 }
