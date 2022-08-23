@@ -1,8 +1,15 @@
 package com.barclays.capstone.main.model;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "bank_customer")
 public class BankCustomer {
 
-	String customerID;
+	@Id
+	int customerID;
 	String panCard;
 	String aadharNumber;
 	String customerNname;
@@ -11,11 +18,11 @@ public class BankCustomer {
 	String dob;
 	String role;
 
-	public String getCustomerID() {
+	public int getCustomerID() {
 		return customerID;
 	}
 
-	public void setCustomerID(String customerID) {
+	public void setCustomerID(int customerID) {
 		this.customerID = customerID;
 	}
 

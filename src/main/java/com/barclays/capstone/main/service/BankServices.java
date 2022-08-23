@@ -11,6 +11,7 @@ import com.barclays.capstone.main.model.BankCustomer;
 import com.barclays.capstone.main.model.ChangePassword;
 import com.barclays.capstone.main.model.Login;
 import com.barclays.capstone.main.repository.BankRepository;
+import com.barclays.capstone.main.repository.CustomerRepository;
 import com.barclays.capstone.main.repository.EmailSender;
 
 @Service
@@ -24,6 +25,9 @@ public class BankServices {
 	
 	@Autowired
 	EmailSender email;
+	
+	@Autowired
+	CustomerRepository customerRepo;
 
 	public BankCustomer login(Login user) {
 		return repo.login(user);
@@ -44,9 +48,9 @@ public class BankServices {
 		return false;
 	}
 
-	public String generateCustomerId() {
+	public int generateCustomerId() {
 		Random random = new Random();
-		return String.format("%06d", random.nextInt(10000));
+		return Integer.parseInt("1"+String.format("%05d", random.nextInt(10000)));
 	}
 
 	public void validateCustomerDetails(BankCustomer customer) {
@@ -73,7 +77,10 @@ public class BankServices {
 		customer.setCustomerID(generateCustomerId());
 		String accountNumber = "2663" + String.format("%06d", 1); //use count(*) + 1 
 		customerAccount.setAccountNumber(accountNumber);
-		//email.sendEmail("va4436@srmist.edu.in","TestMail","Email Testing!");
+		customerAccount.setCustomerId(customer.getCustomerID());
+		customerRepo.save(customer);
+		String mailBody="";
+		email.sendEmail(customer.getEmail(),"","");
 		return accountNumber;
 	}
 
