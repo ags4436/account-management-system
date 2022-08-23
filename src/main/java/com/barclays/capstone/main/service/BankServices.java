@@ -1,11 +1,17 @@
 package com.barclays.capstone.main.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.barclays.capstone.main.model.ChangePassword;
 import com.barclays.capstone.main.model.Login;
+import com.barclays.capstone.main.repository.BankRepository;
 
 public class BankServices {
 	
-	public BankCustomers login(Login user) {
+	@Autowired
+	BankRepository repo;
+	
+	public BankCustomer login(Login user) {
 		return repo.login(user);
 	}
 	

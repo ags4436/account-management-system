@@ -38,7 +38,7 @@ public class BankController {
 	@PostMapping(path = "/login")
 	public ResponseEntity<String> login(@RequestBody Login user) {
 		logger.info("Loging in user..........");
-		BankCustomers customer=operations.login(user);
+		BankCustomer customer=operations.login(user);
 		String result="";
 		if(customer==null) {
 			logger.info("Loging failed as user provided wrong credentials");
