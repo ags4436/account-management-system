@@ -25,6 +25,9 @@ public class BankRepository {
 	@Autowired
 	EmailSender mail;
 	
+	@Autowired
+	TransactionRepository transRepo;
+	
 	Logger logger=LoggerFactory.getLogger(BankRepository.class);
 	
 
@@ -68,9 +71,10 @@ public class BankRepository {
 			logger.info("checking current balance");
 			int currentBalance = getbalance(accountNumber);
 			if (currentBalance > amount) {
+				
 				jdbcTemplate.update("UPDATE cust_account SET balance=balance-? where Account_id=?",
 						new Object[] { amount, accountNumber });
-
+				
 				logger.info("Withdrawal successfull......");
 				
 				SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");

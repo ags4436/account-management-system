@@ -1,11 +1,20 @@
 package com.barclays.capstone.main.model;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
+import org.springframework.stereotype.Service;
+
+@Service
+@Entity
+@Table(name = "Transaction")
 public class Transaction {
 	
 	String fromAccountNumber;
     String toAccountNumber;                     // Required For Account Transfer unless not required for Cash deposit or Cash Withdrawal
     float amount;
+    @Id
     String transactionReferenceNumber;
     String type;                                //Debit or credit
     String transactionDate;
@@ -53,5 +62,4 @@ public class Transaction {
 	
 
 
-}
 }
