@@ -1,13 +1,18 @@
 package com.barclays.capstone.main.model;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
+@Entity
+@Table(name = "bank_transaction")
 public class Transaction {
 	
 	String fromAccountNumber;
     String toAccountNumber;
     float amount;
-    String transactionReferenceNumber;
-    String type;                                //Debit or credit
+    @Id
+    String transactionReferenceNumber;                                
     String transactionDate;
 
     public String getTransactionDate() {
@@ -44,10 +49,5 @@ public class Transaction {
 		this.transactionReferenceNumber = transactionReferenceNumber;
 	}
 	
-	public String getType() {
-		return type;
-	}
-	public void setType(String type) {
-		this.type = type;
-	}
+
 }
