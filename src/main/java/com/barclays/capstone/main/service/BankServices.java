@@ -11,16 +11,19 @@ import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.barclays.capstone.main.model.BankAccount;
 import com.barclays.capstone.main.model.BankCustomer;
 import com.barclays.capstone.main.model.ChangePassword;
 import com.barclays.capstone.main.model.Credentials;
+import com.barclays.capstone.main.model.ImageUpload;
 import com.barclays.capstone.main.repository.AccountRepository;
 import com.barclays.capstone.main.repository.BankRepository;
 import com.barclays.capstone.main.repository.CredentialsRepository;
 import com.barclays.capstone.main.repository.CustomerRepository;
 import com.barclays.capstone.main.repository.EmailSender;
+import com.barclays.capstone.main.repository.ImageRepository;
 import com.google.common.hash.Hashing;
 
 @Service
@@ -39,6 +42,9 @@ public class BankServices {
 	EmailSender email;
 
 	@Autowired
+	ImageUpload imgUpload;
+
+	@Autowired
 	CustomerRepository customerRepo;
 
 	@Autowired
@@ -46,6 +52,9 @@ public class BankServices {
 
 	@Autowired
 	CredentialsRepository credentialsRepo;
+
+	@Autowired
+	ImageRepository imgRepo;
 
 	public HashMap<String, String> login(Credentials creds) {
 		HashMap<String, String> response = new HashMap<String, String>();
@@ -121,12 +130,12 @@ public class BankServices {
 		return response;
 	}
 
-	public HashMap<String, String> isExistingCustomer(String panCard,int userId, String cookieToken) {
-		
+	public HashMap<String, String> isExistingCustomer(String panCard, int userId, String cookieToken) {
+
 		String status = "True";
 		String message = "No Customer Found with PAN: " + panCard;
 		HashMap<String, String> response = new HashMap<String, String>();
-		
+
 		if (!checkSession(userId, cookieToken)) {
 
 			status = "False";
@@ -145,7 +154,7 @@ public class BankServices {
 			response.put("statusCode", "403");
 			return response;
 		}
-		
+
 		BankCustomer customer = customerRepo.findBypanCard(panCard);
 		if (customer != null) {
 			status = "true";
@@ -211,13 +220,14 @@ public class BankServices {
 		return false;
 	}
 
-	public HashMap<String, String> addNewCustomer(BankCustomer customer, int userId, String cookieToken) {
+	public HashMap<String, String> addNewCustomer(BankCustomer customer, MultipartFile multipartFile, int userId,
+			String cookieToken) {
 
 		HashMap<String, String> response = new HashMap<String, String>();
 		String status = "True";
 		String message = "Account Created Successfully!";
 
-		if (isExistingCustomer(customer.getPanCard(),userId,cookieToken).containsKey("Customer Id")) {
+		if (isExistingCustomer(customer.getPanCard(), userId, cookieToken).containsKey("Customer Id")) {
 			status = "False";
 			message = "Customer PAN Exits!";
 			response.put("success", status);
@@ -246,6 +256,7 @@ public class BankServices {
 		}
 
 		validateCustomerDetails(customer);
+
 		customer.setCustomerID(generateCustomerId());
 		String accountNumber = "2663" + String.format("%06d", accountRepo.count() + 1);
 		customerAccount.setAccountNumber(accountNumber);
@@ -253,6 +264,19 @@ public class BankServices {
 		customerAccount.setCurrentBalance(0);
 		customerRepo.save(customer);
 		accountRepo.save(customerAccount);
+
+		try {
+			imgUpload.setId(customer.getCustomerID());
+			imgUpload.setName(multipartFile.getOriginalFilename());
+			imgUpload.setType(multipartFile.getContentType());
+			imgUpload.setImage(multipartFile.getBytes());
+			
+			imgRepo.save(imgUpload);
+			
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+
 		String TempPassword = generateRandomPassword(20);
 
 		String mailBody = "Hello " + customer.getCustomerName() + "!\n"

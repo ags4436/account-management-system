@@ -12,11 +12,42 @@ public class BankCustomer {
 	int customerID;
 	String panCard;
 	String aadharNumber;
-	String customerNname;
+	String customerName;
 	String postalAddress;
 	String email;
 	String dob;
 	String role;
+	
+
+	public BankCustomer(String panCard, String aadharNumber, String customerName, String postalAddress,
+			String email, String dob, String role) {
+		super();
+		this.panCard = panCard;
+		this.aadharNumber = aadharNumber;
+		this.customerName = customerName;
+		this.postalAddress = postalAddress;
+		this.email = email;
+		this.dob = dob;
+		this.role = role;
+	}
+
+	public BankCustomer() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	
+	public BankCustomer(int customerID, String aadharNumber,String customerName,
+			String dob, String email, String panCard,   String postalAddress,String role) {
+		super();
+		this.customerID = customerID;
+		this.aadharNumber = aadharNumber;
+		this.customerName = customerName;
+		this.dob = dob;
+		this.email = email;
+		this.panCard = panCard;
+		this.postalAddress = postalAddress;
+		this.role = role;
+	}
 
 	public int getCustomerID() {
 		return customerID;
@@ -43,11 +74,11 @@ public class BankCustomer {
 	}
 
 	public String getCustomerName() {
-		return customerNname;
+		return customerName;
 	}
 
 	public void setCustomerName(String name) {
-		this.customerNname = name;
+		this.customerName = name;
 	}
 
 	public String getPostalAddress() {
@@ -85,7 +116,7 @@ public class BankCustomer {
 	@Override
 	public String toString() {
 		return "BankCustomer [customerID=" + customerID + ", panCard=" + panCard + ", aadharNumber=" + aadharNumber
-				+ ", Name=" + customerNname + ", postalAddress=" + postalAddress + ", email=" + email + ", dob=" + dob
+				+ ", Name=" + customerName + ", postalAddress=" + postalAddress + ", email=" + email + ", dob=" + dob
 				+ ", role=" + role + "]";
 	}
 }
