@@ -1,5 +1,7 @@
 package com.barclays.capstone.main.controller;
 
+import java.util.HashMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,63 +16,59 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.barclays.capstone.main.model.BankAccount;
 import com.barclays.capstone.main.model.BankCustomer;
 import com.barclays.capstone.main.model.ChangePassword;
-import com.barclays.capstone.main.model.Login;
+import com.barclays.capstone.main.model.Credentials;
 import com.barclays.capstone.main.service.BankServices;
-
-
 
 @RestController
 @RequestMapping("/account")
 public class BankController {
-	
-	
-	
+
 //	@RequestMapping(value = "/hello", method = RequestMethod.GET, produces = { "application/json" })
 //	public String Hello() {
 //		return "Hello";
 //	}
-	
+
 	@Autowired
 	BankServices operations;
 
-	
-	Logger logger=LoggerFactory.getLogger(BankController.class);
-	
-	@PostMapping(path = "/login")
-	public ResponseEntity<String> login(@RequestBody Login user) {
+	Logger logger = LoggerFactory.getLogger(BankController.class);
+
+	@RequestMapping(value = "/login", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<HashMap<String, String>> login(@RequestBody Credentials creds) {
 		logger.info("Loging in user..........");
-		BankCustomer customer=operations.login(user);
-		String result="";
-		if(customer==null) {
-			logger.info("Loging failed as user provided wrong credentials");
-			result="Wrong credentials. Please try again with correct ID and password";
-			return new ResponseEntity<String>(result, HttpStatus.BAD_REQUEST);
-		}
-		result=customer.getRole();
-		logger.info(user.getUserId()+" log in successful and user has a role: "+ result);
-		return new ResponseEntity<String>(result,HttpStatus.OK);
+		HashMap<String, String> result = operations.login(creds);
+
+		return new ResponseEntity<HashMap<String, String>>(result, HttpStatus.OK);
 	}
-	
+
 	@PostMapping("/changePassword")
-	public ResponseEntity<String> changePassword(@RequestBody ChangePassword changePassword){
+	public ResponseEntity<HashMap<String, String>> changePassword(@RequestBody ChangePassword changePassword) {
 		logger.info("Changing password.....................");
-		  String result=operations.changePassword(changePassword);
-		  return new ResponseEntity<String>(result,HttpStatus.OK);
+		HashMap<String,String> result  = operations.changePassword(changePassword);
+		return new ResponseEntity<HashMap<String,String>>(result, HttpStatus.OK);
 	}
+
 	@RequestMapping(value = "/check-customer-pan", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public Boolean checkCustomerPan(@RequestBody BankCustomer customer) {
 		System.out.println(customer.toString());
 		return operations.isExistingCustomer(customer.getPanCard());
 	}
-	
-	@RequestMapping(value = "/create-new-account", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public String createAccount(@RequestBody BankCustomer customer) {
+
+	@RequestMapping(value = "/create-new-account/{customerId}/{cookieToken}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<HashMap<String, String>> createAccount(@RequestBody BankCustomer customer, @PathVariable(name = "customerId") int customerId,@PathVariable(name = "cookieToken") String cookieToken) {
 		System.out.println(customer.toString());
-		return operations.createAccount(customer);
+		HashMap<String,String> result  = operations.createAccount(customer,customerId,cookieToken);
+		return new ResponseEntity<HashMap<String,String>>(result, HttpStatus.OK);
 	}
 	
-	
+	@RequestMapping(value = "/add-new-account", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public Boolean addNewAccount(@RequestBody BankAccount account) {
+		//return operations.isExistingCustomer(customer.getPanCard());
+		
+		return true;
+	}
 
 }

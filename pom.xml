@@ -66,6 +66,20 @@
 			<artifactId>javax.mail</artifactId>
 			<version>1.6.2</version>
 		</dependency>
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>31.0.1-jre</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.googlecode.perfect-hashes</groupId>
+			<artifactId>perfect-hashes</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+
 	</dependencies>
 
 	<build>
