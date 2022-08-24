@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.barclays.capstone.main.exception.InvalidCustomerDataException;
 import com.barclays.capstone.main.model.BankAccount;
 import com.barclays.capstone.main.model.BankCustomer;
 import com.barclays.capstone.main.model.ChangePassword;
@@ -195,7 +196,11 @@ public class BankServices {
 		if (!Pattern.compile("\\d\\d/\\d\\d/\\d\\d\\d\\d").matcher(customer.getDob()).matches())
 			ErrorMessage += "Invalid DOB :: Format DD/MM/YYYY\n";
 
-		System.out.println(ErrorMessage);
+		if(ErrorMessage!="") {
+			throw new InvalidCustomerDataException(ErrorMessage);
+		}
+		
+		
 	}
 
 	public static String generateRandomPassword(int len) {
