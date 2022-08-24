@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.barclays.capstone.main.exception.CustomerIdNotFoundException;
 import com.barclays.capstone.main.model.BankCustomer;
 import com.barclays.capstone.main.model.ChangePassword;
 import com.barclays.capstone.main.model.Login;
@@ -82,7 +84,7 @@ public class BankController {
 	@RequestMapping(value = "/viewDetails/{customerid}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public BankCustomer findById(@PathVariable int customerid){
 	   return bankCustomerService.findById(customerid)
-	           .orElseThrow(() -> new RuntimeException("Customer not found"));
+	           .orElseThrow(() -> new CustomerIdNotFoundException("Customer not found"));
 	}
 	
 	@RequestMapping(value = "/delete/{customerid}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -95,6 +97,9 @@ public class BankController {
 //	@RequestMapping(value = "/update/{customerid}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@PutMapping("/update/{customerid}")
 	public ResponseEntity<HashMap<String, String>> updateBankCustomer(@RequestBody BankCustomer bankCustomer,@PathVariable int customerid) {
+		if(bankCustomer.equals(null)) {
+			throw new CustomerIdNotFoundException("Invalid object entry");
+		}
 		HashMap<String,String> result = bankCustomerService.updateBankCustomer(customerid,bankCustomer);
 		return new ResponseEntity<HashMap<String,String>>(result, HttpStatus.OK);
 	}
