@@ -86,11 +86,14 @@ public  class BankCustomerServiceImpl implements BankCustomerService {
 					}
 			return response;
 		 }
-		 else {
-			 status = "True";
-			message = "Email Address and Postal";
+		 else if(bankCustomer.getEmail() == null && bankCustomer.getPostalAddress() == null){
+			 status = "False";
+			message = "Failed to update the details. ";
 				response.put("success", status);
 				response.put("message", message);
+			 return response;
+		 }
+		 else {
 			 return response;
 		 }
 //		 String sql = " UPDATE bank_customer SET email=?, postal_address=? WHERE customerid = ?";
