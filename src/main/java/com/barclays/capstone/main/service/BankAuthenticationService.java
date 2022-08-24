@@ -1,0 +1,85 @@
+package com.barclays.capstone.main.service;
+
+import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.HashMap;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.barclays.capstone.main.model.ChangePassword;
+import com.barclays.capstone.main.model.Credentials;
+
+import com.barclays.capstone.main.repository.CredentialsRepository;
+import com.google.common.hash.Hashing;
+
+@Service
+public class BankAuthenticationService {
+
+	@Autowired
+	Credentials creds;
+
+	@Autowired
+	ServiceUtility serviceUtility;
+
+	@Autowired
+	CredentialsRepository credentialsRepo;
+
+	public HashMap<String, String> login(Credentials creds) {
+		HashMap<String, String> response = new HashMap<String, String>();
+		String status = "False";
+		String message = "Login Failed, Incorrect Username or Password!";
+		Credentials user = credentialsRepo.findBycustomerIdAndPassword(creds.getCustomerId(),
+				Hashing.sha256().hashString(creds.getPassword(), StandardCharsets.UTF_8).toString());
+		if (user != null) {
+			if (user.getIsNewUser() == 1) {
+				status = "True";
+				message = "Change your Temporary Password and Login Again!";
+				response.put("success", status);
+				response.put("message", message);
+				return response;
+			}
+			String cookieToken = Hashing.sha256()
+					.hashString(serviceUtility.generateRandomPassword(20), StandardCharsets.UTF_8).toString();
+			creds.setCookieToken(cookieToken);
+			creds.setPassword(Hashing.sha256().hashString(creds.getPassword(), StandardCharsets.UTF_8).toString());
+			Timestamp now = Timestamp.from(Instant.now());
+			creds.setCookieExpiry(now);
+			credentialsRepo.save(creds);
+			status = "True";
+			message = "Logged in successfully";
+			response.put("token", cookieToken);
+		}
+		response.put("success", status);
+		response.put("message", message);
+
+		return response;
+	}
+
+	public HashMap<String, String> changePassword(ChangePassword password) {
+
+		String status = "False";
+		String message = "Falied to Change Password!";
+		HashMap<String, String> response = new HashMap<String, String>();
+		Credentials user = credentialsRepo.findBycustomerIdAndPassword(password.getCustomerId(),
+				Hashing.sha256().hashString(password.getCurrentpassword(), StandardCharsets.UTF_8).toString());
+		if (user != null) {
+			if (user.getIsNewUser() == 1) {
+				creds.setIsNewUser(0);
+			}
+			String cookieToken = null;
+			creds.setCustomerId(password.getCustomerId());
+			creds.setCookieToken(cookieToken);
+			creds.setPassword(
+					Hashing.sha256().hashString(password.getNewPassword(), StandardCharsets.UTF_8).toString());
+			credentialsRepo.save(creds);
+			status = "True";
+			message = "Successfully Changed Password! Login Again for Security Purpose";
+		}
+		response.put("success", status);
+		response.put("message", message);
+		return response;
+	}
+
+}

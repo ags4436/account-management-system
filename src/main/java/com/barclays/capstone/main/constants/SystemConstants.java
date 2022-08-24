@@ -10,5 +10,8 @@ public class SystemConstants {
 	  public static final String VIEWCUSTOMERDETAILS= "/viewDetails/{customerid}";
 	  public static final String DETELECUSTOMERDETAILS= "/delete/{customerid}";
 	  public static final String UPDATECUSTOMERDETAILS= "/update/{customerid}";
+	  public static final String DEPOSIT= "/deposit/{customerId}/{cookieToken}";
+	  public static final String WITHDRAW= "/withdrawal/{customerId}/{cookieToken}";
+	  public static final String TRANSFER= "/transfer/{customerId}/{cookieToken}";
 	  
 }

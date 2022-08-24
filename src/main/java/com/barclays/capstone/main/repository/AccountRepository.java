@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.barclays.capstone.main.model.BankAccount;
 
 @Repository
-public interface AccountRepository extends JpaRepository<BankAccount, Integer> {
+public interface AccountRepository extends JpaRepository<BankAccount, String> {
 
 }
