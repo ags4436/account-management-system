@@ -12,14 +12,14 @@ import org.springframework.stereotype.Service;
 public class BankAccount {
 	
 	@Id
-	private String accountNumber;
+	private long accountNumber;
 	private int customerId;
 	private int currentBalance;
 	
-	public String getAccountNumber() {
+	public long getAccountNumber() {
 		return accountNumber;
 	}
-	public void setAccountNumber(String accountNumber) {
+	public void setAccountNumber(long accountNumber) {
 		this.accountNumber = accountNumber;
 	}
 	public int getCustomerId() {

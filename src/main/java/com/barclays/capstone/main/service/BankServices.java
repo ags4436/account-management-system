@@ -1,5 +1,6 @@
 package com.barclays.capstone.main.service;
 
+import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
 
@@ -72,9 +73,14 @@ public class BankServices {
 		validateCustomerDetails(customer);
 		customer.setCustomerID(generateCustomerId());
 		String accountNumber = "2663" + String.format("%06d", 1); //use count(*) + 1 
-		customerAccount.setAccountNumber(accountNumber);
+	//	customerAccount.setAccountNumber(accountNumber);
 		//email.sendEmail("va4436@srmist.edu.in","TestMail","Email Testing!");
 		return accountNumber;
 	}
+
+	public List<BankAccount> viewAccount(String pancard) {
+		return repo.viewAccounts(pancard);
+	}
+
 
 }
