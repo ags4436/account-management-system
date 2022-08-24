@@ -1,11 +1,7 @@
 package com.barclays.capstone.main.service;
 
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.HashMap;
-import java.util.Optional;
 import java.util.Random;
 import java.util.regex.Pattern;
 
@@ -16,11 +12,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.barclays.capstone.main.exception.InvalidCustomerDataException;
 import com.barclays.capstone.main.model.BankAccount;
 import com.barclays.capstone.main.model.BankCustomer;
-import com.barclays.capstone.main.model.ChangePassword;
 import com.barclays.capstone.main.model.Credentials;
 import com.barclays.capstone.main.model.ImageUpload;
 import com.barclays.capstone.main.repository.AccountRepository;
-import com.barclays.capstone.main.repository.BankRepository;
 import com.barclays.capstone.main.repository.CredentialsRepository;
 import com.barclays.capstone.main.repository.CustomerRepository;
 import com.barclays.capstone.main.repository.EmailSender;
@@ -28,26 +22,8 @@ import com.barclays.capstone.main.repository.ImageRepository;
 import com.google.common.hash.Hashing;
 
 @Service
-public class BankServices {
-
-	@Autowired
-	BankAccount customerAccount;
-
-	@Autowired
-	Credentials creds;
-
-	@Autowired
-	BankRepository repo;
-
-	@Autowired
-	EmailSender email;
-
-	@Autowired
-	ImageUpload imgUpload;
-
-	@Autowired
-	CustomerRepository customerRepo;
-
+public class BankAccountService {
+	
 	@Autowired
 	AccountRepository accountRepo;
 
@@ -56,88 +32,57 @@ public class BankServices {
 
 	@Autowired
 	ImageRepository imgRepo;
+	
+	@Autowired
+	CustomerRepository customerRepo;
+	
+	@Autowired
+	ServiceUtility serviceUtility;
+	
+	@Autowired
+	BankAccount customerAccount;
 
-	public HashMap<String, String> login(Credentials creds) {
-		HashMap<String, String> response = new HashMap<String, String>();
-		String status = "False";
-		String message = "Login Failed, Incorrect Username or Password!";
-		Credentials user = credentialsRepo.findBycustomerIdAndPassword(creds.getCustomerId(),
-				Hashing.sha256().hashString(creds.getPassword(), StandardCharsets.UTF_8).toString());
-		if (user != null) {
-			if (user.getIsNewUser() == 1) {
-				status = "True";
-				message = "Change your Temporary Password and Login Again!";
-				response.put("success", status);
-				response.put("message", message);
-				return response;
-			}
-			String cookieToken = Hashing.sha256().hashString(generateRandomPassword(20), StandardCharsets.UTF_8)
-					.toString();
-			creds.setCookieToken(cookieToken);
-			creds.setPassword(Hashing.sha256().hashString(creds.getPassword(), StandardCharsets.UTF_8).toString());
-			Timestamp now = Timestamp.from(Instant.now());
-			creds.setCookieExpiry(now);
-			credentialsRepo.save(creds);
-			status = "True";
-			message = "Logged in successfully";
-			response.put("token", cookieToken);
+	@Autowired
+	Credentials creds;
+
+
+	@Autowired
+	EmailSender email;
+
+	@Autowired
+	ImageUpload imgUpload;
+
+	
+	public void validateCustomerDetails(BankCustomer customer) {
+
+		String ErrorMessage = "";
+
+		if (!Pattern.compile("[A-Z]{5}[0-9]{4}[A-Z]{1}").matcher(customer.getPanCard()).matches())
+			ErrorMessage += "Invalid PAN\n";
+		if (!Pattern.compile("[0-9]{12}").matcher(customer.getAadharNumber()).matches())
+			ErrorMessage += "Invalid Aadhar Number\n";
+		if (!Pattern.compile("^[a-zA-Z\\s]+").matcher(customer.getCustomerName()).matches())
+			ErrorMessage += "Invalid Name\n";
+		if (!Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE)
+				.matcher(customer.getEmail()).matches())
+			ErrorMessage += "Invalid Email Id\n";
+		if (!Pattern.compile("\\d\\d/\\d\\d/\\d\\d\\d\\d").matcher(customer.getDob()).matches())
+			ErrorMessage += "Invalid DOB :: Format DD/MM/YYYY\n";
+
+		if(ErrorMessage!="") {
+			throw new InvalidCustomerDataException(ErrorMessage);
 		}
-		response.put("success", status);
-		response.put("message", message);
-
-		return response;
+		
+		
 	}
-
-	public Boolean checkSession(int customerId, String cookieToken) {
-
-		Credentials user = credentialsRepo.findByCustomerIdAndCookieToken(customerId, cookieToken);
-		if (user != null) {
-			long timeDiff = (Timestamp.from(Instant.now()).getTime() - user.getCookieExpiry().getTime()) / 60000;
-			System.out.println(timeDiff);
-			if (timeDiff > 10) {
-				System.out.println((Timestamp.from(Instant.now()).getTime() - user.getCookieExpiry().getTime()));
-				return false;
-			}
-		} else {
-			return false;
-		}
-
-		return true;
-
-	}
-
-	public HashMap<String, String> changePassword(ChangePassword password) {
-
-		String status = "False";
-		String message = "Falied to Change Password!";
-		HashMap<String, String> response = new HashMap<String, String>();
-		Credentials user = credentialsRepo.findBycustomerIdAndPassword(password.getCustomerId(),
-				Hashing.sha256().hashString(password.getCurrentpassword(), StandardCharsets.UTF_8).toString());
-		if (user != null) {
-			if (user.getIsNewUser() == 1) {
-				creds.setIsNewUser(0);
-			}
-			String cookieToken = null;
-			creds.setCustomerId(password.getCustomerId());
-			creds.setCookieToken(cookieToken);
-			creds.setPassword(
-					Hashing.sha256().hashString(password.getNewPassword(), StandardCharsets.UTF_8).toString());
-			credentialsRepo.save(creds);
-			status = "True";
-			message = "Successfully Changed Password! Login Again for Security Purpose";
-		}
-		response.put("success", status);
-		response.put("message", message);
-		return response;
-	}
-
+	
 	public HashMap<String, String> isExistingCustomer(String panCard, int userId, String cookieToken) {
 
 		String status = "True";
 		String message = "No Customer Found with PAN: " + panCard;
 		HashMap<String, String> response = new HashMap<String, String>();
 
-		if (!checkSession(userId, cookieToken)) {
+		if (!serviceUtility.checkSession(userId, cookieToken)) {
 
 			status = "False";
 			message = "Session Expired!";
@@ -147,7 +92,7 @@ public class BankServices {
 			return response;
 		}
 
-		if (!isAdmin(userId, cookieToken)) {
+		if (!serviceUtility.isAdmin(userId, cookieToken)) {
 			status = "False";
 			message = "Forbidden";
 			response.put("success", status);
@@ -180,58 +125,24 @@ public class BankServices {
 
 	}
 
-	public void validateCustomerDetails(BankCustomer customer) {
-
-		String ErrorMessage = "";
-
-		if (!Pattern.compile("[A-Z]{5}[0-9]{4}[A-Z]{1}").matcher(customer.getPanCard()).matches())
-			ErrorMessage += "Invalid PAN\n";
-		if (!Pattern.compile("[0-9]{12}").matcher(customer.getAadharNumber()).matches())
-			ErrorMessage += "Invalid Aadhar Number\n";
-		if (!Pattern.compile("^[a-zA-Z\\s]+").matcher(customer.getCustomerName()).matches())
-			ErrorMessage += "Invalid Name\n";
-		if (!Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE)
-				.matcher(customer.getEmail()).matches())
-			ErrorMessage += "Invalid Email Id\n";
-		if (!Pattern.compile("\\d\\d/\\d\\d/\\d\\d\\d\\d").matcher(customer.getDob()).matches())
-			ErrorMessage += "Invalid DOB :: Format DD/MM/YYYY\n";
-
-		if(ErrorMessage!="") {
-			throw new InvalidCustomerDataException(ErrorMessage);
-		}
-		
-		
-	}
-
-	public static String generateRandomPassword(int len) {
-		// ASCII range – alphanumeric (0-9, a-z, A-Z)
-		final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-		SecureRandom random = new SecureRandom();
-		StringBuilder sb = new StringBuilder();
-
-		for (int i = 0; i < len; i++) {
-			int randomIndex = random.nextInt(chars.length());
-			sb.append(chars.charAt(randomIndex));
-		}
-
-		return sb.toString();
-	}
-
-	public Boolean isAdmin(int userId, String cookieToken) {
-		Optional<BankCustomer> user = customerRepo.findById(userId);
-		if (user.get().getRole().equalsIgnoreCase("manager"))
-			return true;
-		return false;
-	}
-
+	
 	public HashMap<String, String> addNewCustomer(BankCustomer customer, MultipartFile multipartFile, int userId,
 			String cookieToken) {
 
 		HashMap<String, String> response = new HashMap<String, String>();
 		String status = "True";
 		String message = "Account Created Successfully!";
+		
+		if (!serviceUtility.checkSession(userId, cookieToken)) {
 
+			status = "False";
+			message = "Session Expired!";
+			response.put("success", status);
+			response.put("message", message);
+			response.put("statusCode", "401");
+			return response;
+		}
+		
 		if (isExistingCustomer(customer.getPanCard(), userId, cookieToken).containsKey("Customer Id")) {
 			status = "False";
 			message = "Customer PAN Exits!";
@@ -241,17 +152,9 @@ public class BankServices {
 			return response;
 		}
 
-		if (!checkSession(userId, cookieToken)) {
+		
 
-			status = "False";
-			message = "Session Expired!";
-			response.put("success", status);
-			response.put("message", message);
-			response.put("statusCode", "401");
-			return response;
-		}
-
-		if (!isAdmin(userId, cookieToken)) {
+		if (!serviceUtility.isAdmin(userId, cookieToken)) {
 			status = "False";
 			message = "Forbidden";
 			response.put("success", status);
@@ -282,7 +185,7 @@ public class BankServices {
 			System.out.println(e);
 		}
 
-		String TempPassword = generateRandomPassword(20);
+		String TempPassword = serviceUtility.generateRandomPassword(20);
 
 		String mailBody = "Hello " + customer.getCustomerName() + "!\n"
 				+ "Welcome to BBI, Please find your Account Details.\n" + "\n Account Number: "
@@ -310,7 +213,7 @@ public class BankServices {
 		String status = "True";
 		String message = "Account Created Successfully!";
 
-		if (!checkSession(userId, cookieToken)) {
+		if (!serviceUtility.checkSession(userId, cookieToken)) {
 			status = "False";
 			message = "Session Expired!";
 			response.put("success", status);
@@ -319,7 +222,7 @@ public class BankServices {
 			return response;
 		}
 
-		if (!isAdmin(userId, cookieToken)) {
+		if (!serviceUtility.isAdmin(userId, cookieToken)) {
 			status = "False";
 			message = "Forbidden";
 			response.put("success", status);
@@ -349,5 +252,6 @@ public class BankServices {
 		response.put("statusCode", "201");
 		return response;
 	}
+
 
 }
