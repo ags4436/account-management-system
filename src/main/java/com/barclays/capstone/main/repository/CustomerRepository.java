@@ -11,5 +11,5 @@ import com.barclays.capstone.main.model.BankCustomer;
 @Repository
 public interface CustomerRepository extends JpaRepository<BankCustomer, Integer> {
 
-	public abstract List<BankCustomer> findBypanCard(String panCard);
+	public abstract BankCustomer findBypanCard(String panCard);
 }

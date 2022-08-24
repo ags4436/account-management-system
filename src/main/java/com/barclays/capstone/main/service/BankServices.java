@@ -5,6 +5,7 @@ import java.security.SecureRandom;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.Random;
 import java.util.regex.Pattern;
 
@@ -87,7 +88,7 @@ public class BankServices {
 				System.out.println((Timestamp.from(Instant.now()).getTime() - user.getCookieExpiry().getTime()));
 				return false;
 			}
-		}else {
+		} else {
 			return false;
 		}
 
@@ -120,12 +121,43 @@ public class BankServices {
 		return response;
 	}
 
-	public Boolean isExistingCustomer(String panCard) {
-		System.out.println(customerRepo.findBypanCard(panCard));
-		if (customerRepo.findBypanCard(panCard).size() != 0) {
-			return true;
+	public HashMap<String, String> isExistingCustomer(String panCard,int userId, String cookieToken) {
+		
+		String status = "True";
+		String message = "No Customer Found with PAN: " + panCard;
+		HashMap<String, String> response = new HashMap<String, String>();
+		
+		if (!checkSession(userId, cookieToken)) {
+
+			status = "False";
+			message = "Session Expired!";
+			response.put("success", status);
+			response.put("message", message);
+			response.put("statusCode", "401");
+			return response;
 		}
-		return false;
+
+		if (!isAdmin(userId, cookieToken)) {
+			status = "False";
+			message = "Forbidden";
+			response.put("success", status);
+			response.put("message", message);
+			response.put("statusCode", "403");
+			return response;
+		}
+		
+		BankCustomer customer = customerRepo.findBypanCard(panCard);
+		if (customer != null) {
+			status = "true";
+			message = "Customer Found with PAN: " + panCard;
+			response.put("Customer Name", customer.getCustomerName());
+			response.put("Aadhar Number", customer.getAadharNumber());
+			response.put("Customer Id", String.valueOf(customer.getCustomerID()));
+		}
+		response.put("success", status);
+		response.put("message", message);
+		response.put("statusCode", "200");
+		return response;
 	}
 
 	public int generateCustomerId() {
@@ -172,24 +204,50 @@ public class BankServices {
 		return sb.toString();
 	}
 
-	public HashMap<String, String> createAccount(BankCustomer customer, int userId, String cookieToken) {
-		
+	public Boolean isAdmin(int userId, String cookieToken) {
+		Optional<BankCustomer> user = customerRepo.findById(userId);
+		if (user.get().getRole().equalsIgnoreCase("manager"))
+			return true;
+		return false;
+	}
+
+	public HashMap<String, String> addNewCustomer(BankCustomer customer, int userId, String cookieToken) {
+
 		HashMap<String, String> response = new HashMap<String, String>();
 		String status = "True";
 		String message = "Account Created Successfully!";
-		
+
+		if (isExistingCustomer(customer.getPanCard(),userId,cookieToken).containsKey("Customer Id")) {
+			status = "False";
+			message = "Customer PAN Exits!";
+			response.put("success", status);
+			response.put("message", message);
+			response.put("statusCode", "200");
+			return response;
+		}
 
 		if (!checkSession(userId, cookieToken)) {
+
 			status = "False";
 			message = "Session Expired!";
 			response.put("success", status);
 			response.put("message", message);
+			response.put("statusCode", "401");
 			return response;
 		}
-		
+
+		if (!isAdmin(userId, cookieToken)) {
+			status = "False";
+			message = "Forbidden";
+			response.put("success", status);
+			response.put("message", message);
+			response.put("statusCode", "403");
+			return response;
+		}
+
 		validateCustomerDetails(customer);
 		customer.setCustomerID(generateCustomerId());
-		String accountNumber = "2663" + String.format("%06d", accountRepo.count() + 1); // use count(*) + 1
+		String accountNumber = "2663" + String.format("%06d", accountRepo.count() + 1);
 		customerAccount.setAccountNumber(accountNumber);
 		customerAccount.setCustomerId(customer.getCustomerID());
 		customerAccount.setCurrentBalance(0);
@@ -213,6 +271,53 @@ public class BankServices {
 		response.put("success", status);
 		response.put("message", message);
 		response.put("account Number", accountNumber);
+		response.put("statusCode", "201");
+		return response;
+	}
+
+	public HashMap<String, String> createAccount(BankAccount customer, int userId, String cookieToken) {
+
+		HashMap<String, String> response = new HashMap<String, String>();
+		String status = "True";
+		String message = "Account Created Successfully!";
+
+		if (!checkSession(userId, cookieToken)) {
+			status = "False";
+			message = "Session Expired!";
+			response.put("success", status);
+			response.put("message", message);
+			response.put("statusCode", "401");
+			return response;
+		}
+
+		if (!isAdmin(userId, cookieToken)) {
+			status = "False";
+			message = "Forbidden";
+			response.put("success", status);
+			response.put("message", message);
+			response.put("statusCode", "403");
+			return response;
+		}
+
+		if (!customerRepo.findById(customer.getCustomerId()).isPresent()) {
+			status = "False";
+			message = "Invaild CustomerId";
+			response.put("success", status);
+			response.put("message", message);
+			response.put("statusCode", "403");
+			return response;
+		}
+
+		String accountNumber = "2663" + String.format("%06d", accountRepo.count() + 1);
+		customerAccount.setAccountNumber(accountNumber);
+		customerAccount.setCustomerId(customer.getCustomerId());
+		customerAccount.setCurrentBalance(0);
+		accountRepo.save(customerAccount);
+
+		response.put("success", status);
+		response.put("message", message);
+		response.put("account Number", accountNumber);
+		response.put("statusCode", "201");
 		return response;
 	}
 
