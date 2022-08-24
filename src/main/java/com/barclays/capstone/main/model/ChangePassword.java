@@ -2,20 +2,20 @@ package com.barclays.capstone.main.model;
 
 public class ChangePassword {
 	
-	String userId;
-    String currentpassword;
+	int customerId;
+    String currentPassword;
     String newPassword;
-    public String getUserId() {
-		return userId;
+    public int getCustomerId() {
+		return customerId;
 	}
-	public void setUserId(String userId) {
-		this.userId = userId;
+	public void setCustomerId(int userId) {
+		this.customerId = userId;
 	}
 	public String getCurrentpassword() {
-		return currentpassword;
+		return currentPassword;
 	}
 	public void setCurrentpassword(String currentpassword) {
-		this.currentpassword = currentpassword;
+		this.currentPassword = currentpassword;
 	}
 	public String getNewPassword() {
 		return newPassword;
