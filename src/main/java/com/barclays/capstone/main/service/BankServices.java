@@ -1,5 +1,8 @@
 package com.barclays.capstone.main.service;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.regex.Pattern;
 
@@ -22,6 +25,8 @@ public class BankServices {
 
 	@Autowired
 	BankRepository repo;
+	
+	
 	
 	@Autowired
 	EmailSender email;
@@ -83,5 +88,6 @@ public class BankServices {
 		email.sendEmail(customer.getEmail(),"","");
 		return accountNumber;
 	}
+
 
 }

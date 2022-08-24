@@ -10,13 +10,47 @@ public class BankCustomer {
 
 	@Id
 	int customerID;
-	String panCard;
 	String aadharNumber;
 	String customerNname;
-	String postalAddress;
-	String email;
 	String dob;
+	String email;
+	String panCard;
+	String postalAddress;
 	String role;
+	
+
+
+
+	public BankCustomer(int customerID, String aadharNumber,String customerNname,
+			String dob, String email, String panCard,   String postalAddress,String role) {
+		super();
+		this.customerID = customerID;
+		this.aadharNumber = aadharNumber;
+		this.customerNname = customerNname;
+		this.dob = dob;
+		this.email = email;
+		this.panCard = panCard;
+		this.postalAddress = postalAddress;
+		this.role = role;
+	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+//		this.customerID = customerID;
+//		this.panCard = panCard;
+//		this.aadharNumber = aadharNumber;
+//		this.customerNname = customerNname;
+//		this.postalAddress = postalAddress;
+//		this.email = email;
+//		this.dob = dob;
+//		this.role = role;
+	}
 
 	public int getCustomerID() {
 		return customerID;
