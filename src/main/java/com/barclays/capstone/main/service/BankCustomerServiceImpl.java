@@ -38,18 +38,16 @@ public  class BankCustomerServiceImpl implements BankCustomerService {
 		 
 		  
 	   }
-	@Override
-	public List<BankCustomer> findAll() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	
 	@Override
 	public HashMap <String, String> deleteBankCustomer(int customerId) {
 		// TODO Auto-generated method stub
 		
 		HashMap<String, String> response = new HashMap<String, String>();
 		String status = "False";
-		String message = "Failed to Delete the user";
+		String message = "CustomerId is invalid";
+		response.put("success", status);
+		response.put("message", message);
 		String sql = "DELETE FROM bank_customer WHERE customerid = ?";
 		if(jdbcTemplate.update(sql,customerId) == 1 ) {
 		status = "True";

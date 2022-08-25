@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -84,22 +85,23 @@ public class BankController {
 	@RequestMapping(value = "/viewDetails/{customerid}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public BankCustomer findById(@PathVariable int customerid){
 	   return bankCustomerService.findById(customerid)
-	           .orElseThrow(() -> new CustomerIdNotFoundException("Customer not found"));
+	           .orElseThrow(() -> new CustomerIdNotFoundException("CustomerID is invalid"));
 	}
 	
 	@RequestMapping(value = "/delete/{customerid}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<HashMap<String, String>> deleteBankCustomer(@PathVariable int customerid){
+		
+		
 		HashMap<String,String> result = bankCustomerService.deleteBankCustomer(customerid);
 		return new ResponseEntity<HashMap<String,String>>(result, HttpStatus.OK);
+		
 	}
 	
 
 //	@RequestMapping(value = "/update/{customerid}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@PutMapping("/update/{customerid}")
 	public ResponseEntity<HashMap<String, String>> updateBankCustomer(@RequestBody BankCustomer bankCustomer,@PathVariable int customerid) {
-		if(bankCustomer.equals(null)) {
-			throw new CustomerIdNotFoundException("Invalid object entry");
-		}
+		
 		HashMap<String,String> result = bankCustomerService.updateBankCustomer(customerid,bankCustomer);
 		return new ResponseEntity<HashMap<String,String>>(result, HttpStatus.OK);
 	}

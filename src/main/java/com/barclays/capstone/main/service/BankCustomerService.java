@@ -7,7 +7,7 @@ import java.util.Optional;
 import com.barclays.capstone.main.model.BankCustomer;
 
 public interface BankCustomerService {
-	   List<BankCustomer> findAll();
+	  
 	  
 	   Optional<BankCustomer> findById(int customerId);
 	  
