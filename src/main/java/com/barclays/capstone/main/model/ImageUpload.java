@@ -2,9 +2,6 @@ package com.barclays.capstone.main.model;
 
 import javax.persistence.*;
 
-import org.springframework.stereotype.Service;
-
-@Service
 @Entity
 @Table(name = "bank_id_proof")
 public class ImageUpload {

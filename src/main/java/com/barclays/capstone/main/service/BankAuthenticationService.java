@@ -14,11 +14,15 @@ import com.barclays.capstone.main.model.Credentials;
 import com.barclays.capstone.main.repository.CredentialsRepository;
 import com.google.common.hash.Hashing;
 
+/**
+ * 
+ * @author Divya Raisinghani, Harsh Das, Aakash Gouri Shankar
+ * @Description BankAuthenticationService Business Logic
+ * 
+ */
+
 @Service
 public class BankAuthenticationService {
-
-	@Autowired
-	Credentials creds;
 
 	@Autowired
 	ServiceUtility serviceUtility;
@@ -64,6 +68,7 @@ public class BankAuthenticationService {
 		HashMap<String, String> response = new HashMap<String, String>();
 		Credentials user = credentialsRepo.findBycustomerIdAndPassword(password.getCustomerId(),
 				Hashing.sha256().hashString(password.getCurrentpassword(), StandardCharsets.UTF_8).toString());
+		Credentials creds = new Credentials();
 		if (user != null) {
 			if (user.getIsNewUser() == 1) {
 				creds.setIsNewUser(0);
@@ -76,6 +81,31 @@ public class BankAuthenticationService {
 			credentialsRepo.save(creds);
 			status = "True";
 			message = "Successfully Changed Password! Login Again for Security Purpose";
+		}
+		response.put("success", status);
+		response.put("message", message);
+		return response;
+	}
+
+	public HashMap<String, String> logout(int customerid, String cookieToken) {
+
+		String status = "False";
+		String message = "Falied to logout!";
+		HashMap<String, String> response = new HashMap<String, String>();
+
+		if (!serviceUtility.checkSession(customerid, cookieToken)) {
+			status = "False";
+			message = "Session Expired!";
+			response.put("success", status);
+			response.put("message", message);
+			response.put("statusCode", "401");
+			return response;
+		} else {
+			Credentials creds = credentialsRepo.findById(customerid).get();
+			creds.setCookieToken(null);
+			credentialsRepo.save(creds);
+			message = "Logout Successful!";
+			status = "True";
 		}
 		response.put("success", status);
 		response.put("message", message);

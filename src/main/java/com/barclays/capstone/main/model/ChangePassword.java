@@ -1,5 +1,12 @@
 package com.barclays.capstone.main.model;
 
+/**
+ * 
+ * @author Divya Raisinghani, Harsh Das, Aakash Gouri Shankar
+ * @Description POJO for Change Password 
+ * 
+ */
+
 public class ChangePassword {
 	
 	int customerId;

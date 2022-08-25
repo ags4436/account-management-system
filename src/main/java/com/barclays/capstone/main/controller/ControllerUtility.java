@@ -2,6 +2,12 @@ package com.barclays.capstone.main.controller;
 
 import org.springframework.http.HttpStatus;
 
+/**
+ * 
+ * @author Aakash Gouri Shankar
+ * @Description Utility for Contoller.
+ * 
+ */
 public class ControllerUtility {
 	
 	public HttpStatus getHttpResponseStatus(String statusCode) {

@@ -4,6 +4,13 @@ import java.io.ByteArrayOutputStream;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+/**
+ * 
+ * @author Aakash Gouri Shankar
+ * @Description Image Upload Utility
+ * 
+ */
+
 public class ImageUtility {
 
     public static byte[] compressImage(byte[] data) {

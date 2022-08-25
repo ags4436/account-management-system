@@ -13,6 +13,13 @@ import com.barclays.capstone.main.model.Credentials;
 import com.barclays.capstone.main.repository.CredentialsRepository;
 import com.barclays.capstone.main.repository.CustomerRepository;
 
+/**
+ * 
+ * @author Aakash Gouri Shankar
+ * @Description ServiceUtility
+ * 
+ */
+
 @Service
 public class ServiceUtility {
 
@@ -24,8 +31,10 @@ public class ServiceUtility {
 
 	public Boolean isAdmin(int userId, String cookieToken) {
 		Optional<BankCustomer> user = customerRepo.findById(userId);
-		if (user.get().getRole().equalsIgnoreCase("manager"))
-			return true;
+		if (user != null) {
+			if (user.get().getRole().equalsIgnoreCase("manager"))
+				return true;
+		}
 		return false;
 	}
 

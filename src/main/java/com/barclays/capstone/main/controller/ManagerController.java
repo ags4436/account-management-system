@@ -15,10 +15,18 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.barclays.capstone.main.constants.SystemConstants;
+import com.barclays.capstone.main.exception.BadRequestException;
 import com.barclays.capstone.main.model.BankAccount;
 import com.barclays.capstone.main.model.BankCustomer;
 import com.barclays.capstone.main.service.BankAccountService;
 import com.barclays.capstone.main.service.BankCustomerService;
+
+/**
+ * @author Roopa Amrutha, Shipra Saini, Aakash Gouri SHankar
+ * @Description REST API Controller for Manager and Customer Service related
+ *              APIs
+ *
+ */
 
 @RestController
 @RequestMapping("/account")
@@ -35,6 +43,9 @@ public class ManagerController {
 	@RequestMapping(value = SystemConstants.CHECKCUSTOMERPAN, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<HashMap<String, String>> checkCustomerPan(@RequestBody BankCustomer customer,@PathVariable(name = "customerId") int customerId,@PathVariable(name = "cookieToken") String cookieToken) {
 		System.out.println(customer.toString());
+		if(customer.getPanCard()=="") {
+			throw new BadRequestException("Invalid PAN");
+		}
 		HashMap<String,String> result  = accountService.isExistingCustomer(customer.getPanCard(),customerId,cookieToken);
 		return new ResponseEntity<HashMap<String,String>>(result, controllerUtility.getHttpResponseStatus(result.get("statusCode")));
 	}
@@ -61,28 +72,38 @@ public class ManagerController {
 	
 	@RequestMapping(value = SystemConstants.ADDNEWACCOUNT, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<HashMap<String, String>>  addNewAccount(@RequestBody BankAccount customer, @PathVariable(name = "customerId") int customerId,@PathVariable(name = "cookieToken") String cookieToken) {
-		//return operations.isExistingCustomer(customer.getPanCard());
+		if(customer.getCustomerId()==0) {
+			throw new BadRequestException("Invalid Customer Id");
+		}
 		HashMap<String,String> result  = accountService.createAccount(customer,customerId,cookieToken);
 		return new ResponseEntity<HashMap<String,String>>(result, controllerUtility.getHttpResponseStatus(result.get("statusCode")));
 	}
 	
 	@RequestMapping(value = SystemConstants.VIEWCUSTOMERDETAILS, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = {"*/*"})
-	public BankCustomer findById(@PathVariable int customerid){
-	   return bankCustomerService.findById(customerid)
-	           .orElseThrow(() -> new RuntimeException("Customer not found"));
+	public ResponseEntity<HashMap<String, String>> findById(@RequestParam(value = "userId") int userId,@PathVariable(name = "customerId") int customerId,@PathVariable(name = "cookieToken") String cookieToken){
+	    if(userId==0) {
+	    	throw new BadRequestException("Invalid user Id");
+	    }
+		HashMap<String,String> result  = bankCustomerService.findById(userId,customerId,cookieToken);
+		return new ResponseEntity<HashMap<String,String>>(result, controllerUtility.getHttpResponseStatus(result.get("statusCode")));
 	}
 	
 	@RequestMapping(value = SystemConstants.DETELECUSTOMERDETAILS, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE,consumes = {"*/*"})
-	public ResponseEntity<HashMap<String, String>> deleteBankCustomer(@PathVariable int customerid){
-		HashMap<String,String> result = bankCustomerService.deleteBankCustomer(customerid);
+	public ResponseEntity<HashMap<String, String>> deleteBankCustomer(@RequestParam(value = "userId") int userId,@PathVariable(name = "customerId") int customerId,@PathVariable(name = "cookieToken") String cookieToken){
+		if(userId==0) {
+	    	throw new BadRequestException("Invalid user Id");
+	    }
+		HashMap<String,String> result = bankCustomerService.deleteBankCustomer(userId,customerId,cookieToken);
 		return new ResponseEntity<HashMap<String,String>>(result, HttpStatus.OK);
 	}
 	
 	@RequestMapping(value = SystemConstants.UPDATECUSTOMERDETAILS, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE,consumes = {"*/*"})
-	public ResponseEntity<HashMap<String, String>> updateBankCustomer(@RequestBody BankCustomer bankCustomer,@PathVariable int customerid) {
-		HashMap<String,String> result = bankCustomerService.updateBankCustomer(customerid,bankCustomer);
+	public ResponseEntity<HashMap<String, String>> updateBankCustomer(@RequestBody BankCustomer bankCustomer,@PathVariable(name = "customerId") int customerId,@PathVariable(name = "cookieToken") String cookieToken) {
+		if(bankCustomer.getCustomerID()==0) {
+	    	throw new BadRequestException("Invalid Customer Id");
+	    }
+		HashMap<String,String> result = bankCustomerService.updateBankCustomer(bankCustomer,customerId,cookieToken);
 		return new ResponseEntity<HashMap<String,String>>(result, HttpStatus.OK);
 	}
-
 
 }

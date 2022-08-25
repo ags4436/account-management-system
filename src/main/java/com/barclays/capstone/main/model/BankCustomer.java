@@ -4,6 +4,13 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+/**
+ * @author Roopa Amrutha, Shipra Saini
+ * @Description POJO for Bank Customer Details
+ *              
+ *
+ */
+
 @Entity
 @Table(name = "bank_customer")
 public class BankCustomer {
@@ -115,7 +122,7 @@ public class BankCustomer {
 
 	@Override
 	public String toString() {
-		return "BankCustomer [customerID=" + customerID + ", panCard=" + panCard + ", aadharNumber=" + aadharNumber
+		return "[customerID=" + customerID + ", panCard=" + panCard + ", aadharNumber=" + aadharNumber
 				+ ", Name=" + customerName + ", postalAddress=" + postalAddress + ", email=" + email + ", dob=" + dob
 				+ ", role=" + role + "]";
 	}
