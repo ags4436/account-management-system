@@ -1,10 +1,12 @@
 package com.barclays.capstone.main.service;
 
-import java.text.SimpleDateFormat;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Date;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -18,8 +20,15 @@ import com.barclays.capstone.main.model.BankAccount;
 import com.barclays.capstone.main.model.Transaction;
 import com.barclays.capstone.main.repository.AccountRepository;
 import com.barclays.capstone.main.repository.CustomerRepository;
-import com.barclays.capstone.main.repository.EmailSender;
 import com.barclays.capstone.main.repository.TransactionRepository;
+
+/**
+ * 
+ * @author Akash Salave, Shubham Chokhani, Aakash Gouri Shankar, Rameshwari Joshi
+
+ * @Description Business logic for Transactions.
+ * 
+ */
 
 @Service
 public class BankTransactionService {
@@ -32,23 +41,29 @@ public class BankTransactionService {
 
 	@Autowired
 	CustomerRepository customerRepo;
-	
+
 	@Autowired
 	ServiceUtility serviceUtility;
 
 	@Autowired
 	EmailSender email;
-	
+
 	ControllerUtility controllerUtility = new ControllerUtility();
 
 	Logger logger = LoggerFactory.getLogger(BankTransactionService.class);
 
+	/**
+	 * 
+	 * @param accountNumber
+	 * @param amount
+	 * @param userId
+	 * @param cookieToken
+	 */
 	public HashMap<String, String> deposit(String accountNumber, int amount, int userId, String cookieToken) {
-
 		String status = "True";
 		String message = "Deposit Successfull";
 		HashMap<String, String> response = new HashMap<String, String>();
-		
+
 		if (!serviceUtility.checkSession(userId, cookieToken)) {
 			status = "False";
 			message = "Session Expired!";
@@ -59,14 +74,16 @@ public class BankTransactionService {
 		}
 
 		if (!serviceUtility.isAdmin(userId, cookieToken)) {
-			status = "False";
-			message = "Forbidden";
-			response.put("success", status);
-			response.put("message", message);
-			response.put("statusCode", "403");
-			return response;
+			if (accountRepo.findById(accountNumber).get().getCustomerId() != userId) {
+				status = "False";
+				message = "Forbidden";
+				response.put("success", status);
+				response.put("message", message);
+				response.put("statusCode", "403");
+				return response;
+			}
 		}
-		
+
 		try {
 			logger.info("deposit started");
 			BankAccount customerAccount = accountRepo.findById(accountNumber).get();
@@ -76,9 +93,9 @@ public class BankTransactionService {
 			accountRepo.save(customerAccount);
 
 			logger.info("balance updated");
-			SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-			Date date = new Date();
-			String transactionTimestamp = formatter.format(date);
+
+			long millis = System.currentTimeMillis();
+			java.sql.Date transactionTimestamp = new java.sql.Date(millis);
 
 			logger.info("Updating transactions...............");
 			Transaction newTransaction = new Transaction();
@@ -102,26 +119,33 @@ public class BankTransactionService {
 
 			email.sendEmail(mail, subject, body);
 			logger.info("Mail sent to user");
-			
+
 			response.put("success", status);
 			response.put("message", message);
 			response.put("statusCode", "200");
-			
+
 			return response;
-			
+
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			return null;
 		}
 	}
 
+	/**
+	 * 
+	 * @param accountNumber
+	 * @param amount
+	 * @param userId
+	 * @param cookieToken
+	 * @return
+	 */
 	public HashMap<String, String> cashWithdrawal(String accountNumber, int amount, int userId, String cookieToken) {
 		try {
-			
+
 			String status = "True";
 			String message = "cash Withdrawal Successfull";
 			HashMap<String, String> response = new HashMap<String, String>();
-			
 
 			if (!serviceUtility.checkSession(userId, cookieToken)) {
 				status = "False";
@@ -132,7 +156,8 @@ public class BankTransactionService {
 				return response;
 			}
 			
-			if (accountRepo.findById(accountNumber).get().getCustomerId()!=userId) {
+			
+			if (accountRepo.findById(accountNumber).isPresent()!=true || accountRepo.findById(accountNumber).get().getCustomerId() != userId) {
 				status = "False";
 				message = "Invalid Account Number";
 				response.put("success", status);
@@ -140,13 +165,11 @@ public class BankTransactionService {
 				response.put("statusCode", "403");
 				return response;
 			}
-			
-			
+
 			logger.info("checking current balance");
 
-			SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-			Date date = new Date();
-			String transactionTimestamp = formatter.format(date);
+			long millis = System.currentTimeMillis();
+			java.sql.Date transactionTimestamp = new java.sql.Date(millis);
 
 			BankAccount customerAccount = accountRepo.findById(accountNumber).get();
 			int currentBalance = customerAccount.getCurrentBalance();
@@ -190,14 +213,14 @@ public class BankTransactionService {
 
 				email.sendEmail(mail, subject, body);
 				logger.info("Mail sent to user");
-				
+
 				response.put("success", status);
 				response.put("message", message);
 				response.put("statusCode", "200");
 				return response;
 			} else {
-				message="Insucficcient balance or you have reached today's limit";
-				status="False";
+				message = "Insucficcient balance or you have reached today's limit";
+				status = "False";
 				response.put("success", status);
 				response.put("message", message);
 				response.put("statusCode", "200");
@@ -209,13 +232,23 @@ public class BankTransactionService {
 		}
 	}
 
-	public HashMap<String, String> transfer(String fromAccount, String toAccount, int amount, int userId, String cookieToken) {
+	/**
+	 * 
+	 * @param fromAccount
+	 * @param toAccount
+	 * @param amount
+	 * @param userId
+	 * @param cookieToken
+	 * @return
+	 */
+	public HashMap<String, String> transfer(String fromAccount, String toAccount, int amount, int userId,
+			String cookieToken) {
 		try {
-			
+
 			String status = "True";
 			String message = "Transferd Successfully";
 			HashMap<String, String> response = new HashMap<String, String>();
-			
+
 			if (!serviceUtility.checkSession(userId, cookieToken)) {
 
 				status = "False";
@@ -225,8 +258,8 @@ public class BankTransactionService {
 				response.put("statusCode", "401");
 				return response;
 			}
-			
-			if (accountRepo.findById(fromAccount).get().getCustomerId()!=userId) {
+
+			if (accountRepo.findById(fromAccount).isPresent()!=true || accountRepo.findById(fromAccount).get().getCustomerId() != userId) {
 				status = "False";
 				message = "Your Account Number is Invaild ";
 				response.put("success", status);
@@ -234,7 +267,6 @@ public class BankTransactionService {
 				response.put("statusCode", "403");
 				return response;
 			}
-			
 
 			logger.info("initiating transfer................");
 
@@ -253,9 +285,8 @@ public class BankTransactionService {
 				logger.info("Amount debited from account " + fromAccount);
 				logger.info("Amount credited to account: " + toAccount);
 
-				SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-				Date date = new Date();
-				String transactionTimestamp = formatter.format(date);
+				long millis = System.currentTimeMillis();
+				java.sql.Date date = new java.sql.Date(millis);
 
 				logger.info("Updating transactions...............");
 				Transaction newTransaction = new Transaction();
@@ -263,7 +294,7 @@ public class BankTransactionService {
 				newTransaction.setToAccountNumber(toAccount);
 				newTransaction.setFromAccountNumber(fromAccount);
 				newTransaction.setTransactionReferenceNumber(transactionId);
-				newTransaction.setTransactionDate(transactionTimestamp);
+				newTransaction.setTransactionDate(date);
 
 				transactionRepo.save(newTransaction);
 
@@ -295,21 +326,156 @@ public class BankTransactionService {
 
 				message = "Transfering funds is successfull. TransactionId " + transactionId;
 			} else {
-				status="False";
+				status = "False";
 				message = "Transfering fund is not done due to insufficient funds";
 			}
-			
+
 			response.put("success", status);
 			response.put("message", message);
 			response.put("statusCode", "200");
-			
-			return response ;
+
+			return response;
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			return null;
 		}
 	}
 
+	/**
+	 * 
+	 * @param exportData
+	 * @param header
+	 * @param accountNumber
+	 * @param fromdate
+	 * @param toDate
+	 * @throws IOException
+	 */
+	public void writeToCsv(List<Transaction> exportData, String header, String accountNumber, String fromdate,
+			String toDate) throws IOException {
+		String Path = "H:\\Barclays Training\\" + accountNumber;
+		String fileName = serviceUtility.generateRandomPassword(10) + " " + fromdate + " to " + toDate + ".csv";
+		File theDir = new File(Path);
+		if (!theDir.exists()) {
+			theDir.mkdirs();
+		}
+
+		PrintWriter writer = new PrintWriter(Path + "\\" + fileName);
+		writer.println(header);
+
+		for (Transaction data : exportData) {
+			writer.println(data.toString());
+		}
+		writer.close();
+	}
+
+	/**
+	 * 
+	 * @param accountNumber
+	 * @param fromTransactionDate
+	 * @param toTransactionDate
+	 * @param userId
+	 * @param cookieToken
+	 * @return
+	 */
+	public HashMap<String, String> exportTransaction(String accountNumber, Date fromTransactionDate,
+			Date toTransactionDate, int userId, String cookieToken) {
+		try {
+
+			String status = "True";
+			String message = "Exported Successfully";
+			HashMap<String, String> response = new HashMap<String, String>();
+
+			if (!serviceUtility.checkSession(userId, cookieToken)) {
+
+				status = "False";
+				message = "Session Expired!";
+				response.put("success", status);
+				response.put("message", message);
+				response.put("statusCode", "401");
+				return response;
+			}
+
+			if (accountRepo.findById(accountNumber).get().getCustomerId() != userId) {
+				status = "False";
+				message = "Your Account Number is Invaild ";
+				response.put("success", status);
+				response.put("message", message);
+				response.put("statusCode", "403");
+				return response;
+			}
+
+			List<Transaction> exportData = transactionRepo.findTransactionByDate(accountNumber, fromTransactionDate,
+					toTransactionDate);
+			writeToCsv(exportData,
+					"transaction_reference_number,amount,from_account_number,to_account_number,transaction_date",
+					accountNumber, String.valueOf(fromTransactionDate), String.valueOf(toTransactionDate));
+			response.put("success", status);
+			response.put("message", message);
+			response.put("statusCode", "200");
+
+			return response;
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			return null;
+		}
+	}
+	
+	/**
+	 * 
+	 * @param accountNumber
+	 * @param userId
+	 * @param cookieToken
+	 * @return
+	 */
+	public HashMap<String, String> miniStatement(String accountNumber, int userId, String cookieToken) {
+		try {
+
+			String status = "True";
+			String message = "MiniStatemenet Generated Successfully!";
+			HashMap<String, String> response = new HashMap<String, String>();
+
+			if (!serviceUtility.checkSession(userId, cookieToken)) {
+
+				status = "False";
+				message = "Session Expired!";
+				response.put("success", status);
+				response.put("message", message);
+				response.put("statusCode", "401");
+				return response;
+			}
+
+			if (accountRepo.findById(accountNumber).get().getCustomerId() != userId) {
+				status = "False";
+				message = "Your Account Number is Invaild ";
+				response.put("success", status);
+				response.put("message", message);
+				response.put("statusCode", "403");
+				return response;
+			}
+
+			String miniStatement = "";
+			List<Transaction> trans = transactionRepo.miniStatement(accountNumber);
+
+			for (Transaction transObj : trans) {
+				miniStatement += transObj.toString() + " || ";
+			}
+
+			response.put("miniStatement", miniStatement);
+			response.put("success", status);
+			response.put("message", message);
+			response.put("statusCode", "200");
+
+			return response;
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			return null;
+		}
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
 	public String generateTransactionId() {
 		while (true) {
 			String transactionId = "BBIPUNE" + String.valueOf((int) (Math.random() * (99999 - 10000 + 1) + 10000))

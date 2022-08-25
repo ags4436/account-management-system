@@ -17,13 +17,18 @@ import com.barclays.capstone.main.model.ImageUpload;
 import com.barclays.capstone.main.repository.AccountRepository;
 import com.barclays.capstone.main.repository.CredentialsRepository;
 import com.barclays.capstone.main.repository.CustomerRepository;
-import com.barclays.capstone.main.repository.EmailSender;
 import com.barclays.capstone.main.repository.ImageRepository;
 import com.google.common.hash.Hashing;
 
+/**
+ * 
+ * @author Aakash Gouri Shankar
+ * @Description BankAccountService Create Account Operation
+ * 
+ */
 @Service
 public class BankAccountService {
-	
+
 	@Autowired
 	AccountRepository accountRepo;
 
@@ -32,27 +37,17 @@ public class BankAccountService {
 
 	@Autowired
 	ImageRepository imgRepo;
-	
+
 	@Autowired
 	CustomerRepository customerRepo;
-	
+
 	@Autowired
 	ServiceUtility serviceUtility;
-	
-	@Autowired
-	BankAccount customerAccount;
-
-	@Autowired
-	Credentials creds;
-
 
 	@Autowired
 	EmailSender email;
 
-	@Autowired
-	ImageUpload imgUpload;
 
-	
 	public void validateCustomerDetails(BankCustomer customer) {
 
 		String ErrorMessage = "";
@@ -69,13 +64,12 @@ public class BankAccountService {
 		if (!Pattern.compile("\\d\\d/\\d\\d/\\d\\d\\d\\d").matcher(customer.getDob()).matches())
 			ErrorMessage += "Invalid DOB :: Format DD/MM/YYYY\n";
 
-		if(ErrorMessage!="") {
+		if (ErrorMessage != "") {
 			throw new InvalidCustomerDataException(ErrorMessage);
 		}
-		
-		
+
 	}
-	
+
 	public HashMap<String, String> isExistingCustomer(String panCard, int userId, String cookieToken) {
 
 		String status = "True";
@@ -125,14 +119,13 @@ public class BankAccountService {
 
 	}
 
-	
 	public HashMap<String, String> addNewCustomer(BankCustomer customer, MultipartFile multipartFile, int userId,
 			String cookieToken) {
 
 		HashMap<String, String> response = new HashMap<String, String>();
 		String status = "True";
 		String message = "Account Created Successfully!";
-		
+
 		if (!serviceUtility.checkSession(userId, cookieToken)) {
 
 			status = "False";
@@ -142,7 +135,7 @@ public class BankAccountService {
 			response.put("statusCode", "401");
 			return response;
 		}
-		
+
 		if (isExistingCustomer(customer.getPanCard(), userId, cookieToken).containsKey("Customer Id")) {
 			status = "False";
 			message = "Customer PAN Exits!";
@@ -151,8 +144,6 @@ public class BankAccountService {
 			response.put("statusCode", "200");
 			return response;
 		}
-
-		
 
 		if (!serviceUtility.isAdmin(userId, cookieToken)) {
 			status = "False";
@@ -166,21 +157,25 @@ public class BankAccountService {
 		validateCustomerDetails(customer);
 
 		customer.setCustomerID(generateCustomerId());
-		String accountNumber = "2663" + String.format("%06d", accountRepo.count() + 1);
+		String latestAccountNumber = accountRepo.getAccountNumber();
+		String accountNumber = "2663" + String.format("%06d", Integer.parseInt(latestAccountNumber.substring(latestAccountNumber.length() - 6)) + 1);
+		BankAccount customerAccount = new BankAccount();
 		customerAccount.setAccountNumber(accountNumber);
 		customerAccount.setCustomerId(customer.getCustomerID());
 		customerAccount.setCurrentBalance(0);
 		customerRepo.save(customer);
 		accountRepo.save(customerAccount);
+		
+		ImageUpload imgUpload = new ImageUpload();
 
 		try {
 			imgUpload.setId(customer.getCustomerID());
 			imgUpload.setName(multipartFile.getOriginalFilename());
 			imgUpload.setType(multipartFile.getContentType());
 			imgUpload.setImage(multipartFile.getBytes());
-			
+
 			imgRepo.save(imgUpload);
-			
+
 		} catch (Exception e) {
 			System.out.println(e);
 		}
@@ -192,7 +187,7 @@ public class BankAccountService {
 				+ customerAccount.getAccountNumber() + "\n Customer Id: " + customer.getCustomerID()
 				+ "\n Temporary Password: " + TempPassword + "\n\nHappy Banking! "
 				+ "\nWith Regards, \nBranch Manager\nBBI Pune ";
-
+		Credentials creds = new Credentials() ;
 		creds.setIsNewUser(1);
 		creds.setCustomerId(customer.getCustomerID());
 		creds.setPassword(Hashing.sha256().hashString(TempPassword, StandardCharsets.UTF_8).toString());
@@ -239,8 +234,9 @@ public class BankAccountService {
 			response.put("statusCode", "403");
 			return response;
 		}
-
-		String accountNumber = "2663" + String.format("%06d", accountRepo.count() + 1);
+		String latestAccountNumber = accountRepo.getAccountNumber();
+		String accountNumber = "2663" + String.format("%06d", Integer.parseInt(latestAccountNumber.substring(latestAccountNumber.length() - 6)) + 1);
+		BankAccount customerAccount = new BankAccount();
 		customerAccount.setAccountNumber(accountNumber);
 		customerAccount.setCustomerId(customer.getCustomerId());
 		customerAccount.setCurrentBalance(0);
@@ -252,6 +248,5 @@ public class BankAccountService {
 		response.put("statusCode", "201");
 		return response;
 	}
-
 
 }

@@ -1,4 +1,4 @@
-package com.barclays.capstone.main.repository;
+package com.barclays.capstone.main.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -6,6 +6,13 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+
+/**
+ * 
+ * @author Divya Raisinghani, Harsh Das, Aakash Gouri Shankar
+ * @Description Email Sender Service
+ * 
+ */
 
 
 @Service

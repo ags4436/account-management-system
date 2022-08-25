@@ -6,6 +6,12 @@ import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 
+/**
+ * @author Roopa Amrutha, Shipra Saini
+ * @Description Row Mapper for returning the rows
+ *              
+ *
+ */
 
 public class CustomerRowMapper implements RowMapper<BankCustomer> {
 	  @Override

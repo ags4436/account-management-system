@@ -1,22 +1,24 @@
 package com.barclays.capstone.main.exception;
 
+
 /**
  * 
  * @author Aakash Gouri Shankar
- * @Description Invalid Format of Cusomter Data Exception
+ * @Description Generic Bad Request Exception Class
  * 
  */
-public class InvalidCustomerDataException extends RuntimeException {
+public class BadRequestException extends RuntimeException {
 	
 	private static final long serialVersionUID = 1L;
 	@SuppressWarnings("unused")
 	private String message;
 
-	public InvalidCustomerDataException() {}
+	public BadRequestException() {}
 
-	public InvalidCustomerDataException(String msg)
+	public BadRequestException(String msg)
 	    {
 	        super(msg);
 	        this.message = msg;
 	    }
+
 }
