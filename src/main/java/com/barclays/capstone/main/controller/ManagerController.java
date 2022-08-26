@@ -40,7 +40,7 @@ public class ManagerController {
 	
 	ControllerUtility controllerUtility = new ControllerUtility();
 	
-	@RequestMapping(value = SystemConstants.CHECKCUSTOMERPAN, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = SystemConstants.CHECKCUSTOMERPAN, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<HashMap<String, String>> checkCustomerPan(@RequestBody BankCustomer customer,@PathVariable(name = "customerId") int customerId,@PathVariable(name = "cookieToken") String cookieToken) {
 		System.out.println(customer.toString());
 		if(customer.getPanCard()=="") {
@@ -50,7 +50,7 @@ public class ManagerController {
 		return new ResponseEntity<HashMap<String,String>>(result, controllerUtility.getHttpResponseStatus(result.get("statusCode")));
 	}
 
-	@RequestMapping(value = SystemConstants.ADDNEWCUSTOMER, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = "multipart/form-data")
+	@RequestMapping(value = SystemConstants.ADDNEWCUSTOMER, method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE, consumes = "multipart/form-data")
 	public ResponseEntity<HashMap<String, String>> createAccount( 
 			@RequestParam(value = "panCard") String panCard,
 			@RequestParam(value = "aadharNumber") String aadharNumber,
@@ -79,7 +79,7 @@ public class ManagerController {
 		return new ResponseEntity<HashMap<String,String>>(result, controllerUtility.getHttpResponseStatus(result.get("statusCode")));
 	}
 	
-	@RequestMapping(value = SystemConstants.VIEWCUSTOMERDETAILS, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = {"*/*"})
+	@RequestMapping(value = SystemConstants.VIEWCUSTOMERDETAILS, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE, consumes = {"*/*"})
 	public ResponseEntity<HashMap<String, String>> findById(@RequestParam(value = "userId") int userId,@PathVariable(name = "customerId") int customerId,@PathVariable(name = "cookieToken") String cookieToken){
 	    if(userId==0) {
 	    	throw new BadRequestException("Invalid user Id");
@@ -88,7 +88,7 @@ public class ManagerController {
 		return new ResponseEntity<HashMap<String,String>>(result, controllerUtility.getHttpResponseStatus(result.get("statusCode")));
 	}
 	
-	@RequestMapping(value = SystemConstants.DETELECUSTOMERDETAILS, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE,consumes = {"*/*"})
+	@RequestMapping(value = SystemConstants.DETELECUSTOMERDETAILS, method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE,consumes = {"*/*"})
 	public ResponseEntity<HashMap<String, String>> deleteBankCustomer(@RequestParam(value = "userId") int userId,@PathVariable(name = "customerId") int customerId,@PathVariable(name = "cookieToken") String cookieToken){
 		if(userId==0) {
 	    	throw new BadRequestException("Invalid user Id");
@@ -97,7 +97,7 @@ public class ManagerController {
 		return new ResponseEntity<HashMap<String,String>>(result, HttpStatus.OK);
 	}
 	
-	@RequestMapping(value = SystemConstants.UPDATECUSTOMERDETAILS, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE,consumes = {"*/*"})
+	@RequestMapping(value = SystemConstants.UPDATECUSTOMERDETAILS, method = RequestMethod.PATCH, produces = MediaType.APPLICATION_JSON_VALUE,consumes = {"*/*"})
 	public ResponseEntity<HashMap<String, String>> updateBankCustomer(@RequestBody BankCustomer bankCustomer,@PathVariable(name = "customerId") int customerId,@PathVariable(name = "cookieToken") String cookieToken) {
 		if(bankCustomer.getCustomerID()==0) {
 	    	throw new BadRequestException("Invalid Customer Id");
