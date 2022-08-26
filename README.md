@@ -44,7 +44,7 @@ Clone the project
 Go to the project directory
 
 ```bash
-    Import Project as existing maven Project
+  Import Project as existing maven Project
 ```
 
 maven Update 
