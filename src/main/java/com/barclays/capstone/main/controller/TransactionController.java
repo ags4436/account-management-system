@@ -61,7 +61,7 @@ public class TransactionController {
 	 * @param accountNumber
 	 * @param amount
 	 */
-	@RequestMapping(value = SystemConstants.WITHDRAW, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = {
+	@RequestMapping(value = SystemConstants.WITHDRAW, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE, consumes = {
 			"*/*" })
 	public ResponseEntity<HashMap<String, String>> cashWithdrawal(@PathVariable(name = "customerId") int customerId,
 			@PathVariable(name = "cookieToken") String cookieToken, @RequestParam String accountNumber,
@@ -106,7 +106,7 @@ public class TransactionController {
 	 * @param fromTransactionDate
 	 * @param toTransactionDate
 	 */
-	@RequestMapping(value = SystemConstants.EXPORT, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = {
+	@RequestMapping(value = SystemConstants.EXPORT, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE, consumes = {
 			"*/*" })
 	public ResponseEntity<HashMap<String, String>> exportTransaction(@PathVariable(name = "customerId") int customerId,
 			@PathVariable(name = "cookieToken") String cookieToken, @RequestParam String accountNumber,
@@ -128,7 +128,7 @@ public class TransactionController {
 	 * @param cookieToken
 	 * @param accountNumber
 	 */
-	@RequestMapping(value = SystemConstants.MINISTATEMENT, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = {
+	@RequestMapping(value = SystemConstants.MINISTATEMENT, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE, consumes = {
 			"*/*" })
 	public ResponseEntity<HashMap<String, String>> miniStatement(@PathVariable(name = "customerId") int customerId,
 			@PathVariable(name = "cookieToken") String cookieToken, @RequestParam String accountNumber) {
