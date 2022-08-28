@@ -12,6 +12,7 @@
 	<groupId>account-management-system</groupId>
 	<artifactId>com-account-management-system</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
 	<name>account-management-system</name>
 	<description>Account Management System - Barclays Capstone </description>
 	<properties>
