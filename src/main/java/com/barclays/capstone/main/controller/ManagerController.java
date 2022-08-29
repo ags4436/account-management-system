@@ -2,6 +2,8 @@ package com.barclays.capstone.main.controller;
 
 import java.util.HashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -40,12 +42,16 @@ public class ManagerController {
 	
 	ControllerUtility controllerUtility = new ControllerUtility();
 	
+	Logger logger = LoggerFactory.getLogger(ManagerController.class);
+
 	@RequestMapping(value = SystemConstants.CHECKCUSTOMERPAN, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<HashMap<String, String>> checkCustomerPan(@RequestBody BankCustomer customer,@PathVariable(name = "customerId") int customerId,@PathVariable(name = "cookieToken") String cookieToken) {
-		System.out.println(customer.toString());
+		logger.info("Inside CheckCustomerPAN Contoller");
 		if(customer.getPanCard()=="") {
+			logger.info("Bad Request Throwing Exception");
 			throw new BadRequestException("Invalid PAN");
 		}
+		logger.info("Invoking CheckCustomerPAN Service");
 		HashMap<String,String> result  = accountService.isExistingCustomer(customer.getPanCard(),customerId,cookieToken);
 		return new ResponseEntity<HashMap<String,String>>(result, controllerUtility.getHttpResponseStatus(result.get("statusCode")));
 	}
@@ -63,45 +69,57 @@ public class ManagerController {
 			@PathVariable(name = "customerId") int customerId,
 			@PathVariable(name = "cookieToken") String cookieToken
 			) {
-		
+		logger.info("Inside AddNewCustomer Contoller");
 		BankCustomer customer = new BankCustomer(panCard,aadharNumber,customerName,postalAddress,email,dob,role);
-		System.out.println(customer.toString());
+		logger.info("Invoking AddNewCustomer Service");
 		HashMap<String,String> result  = accountService.addNewCustomer(customer,multipartFile,customerId,cookieToken);
 		return new ResponseEntity<HashMap<String,String>>(result, controllerUtility.getHttpResponseStatus(result.get("statusCode")));
 	}
 	
 	@RequestMapping(value = SystemConstants.ADDNEWACCOUNT, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<HashMap<String, String>>  addNewAccount(@RequestBody BankAccount customer, @PathVariable(name = "customerId") int customerId,@PathVariable(name = "cookieToken") String cookieToken) {
+		logger.info("Inside AddNewAccountContoller");
 		if(customer.getCustomerId()==0) {
+			logger.info("Bad Request Throwing Exception");
 			throw new BadRequestException("Invalid Customer Id");
 		}
+		logger.info("Invoking createAccount Service");
 		HashMap<String,String> result  = accountService.createAccount(customer,customerId,cookieToken);
 		return new ResponseEntity<HashMap<String,String>>(result, controllerUtility.getHttpResponseStatus(result.get("statusCode")));
 	}
 	
 	@RequestMapping(value = SystemConstants.VIEWCUSTOMERDETAILS, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE, consumes = {"*/*"})
 	public ResponseEntity<HashMap<String, String>> findById(@RequestParam(value = "userId") int userId,@PathVariable(name = "customerId") int customerId,@PathVariable(name = "cookieToken") String cookieToken){
-	    if(userId==0) {
+		logger.info("Inside ViewCustomerDetails");
+		if(userId==0) {
+			logger.info("Bad Request Throwing Exception");
 	    	throw new BadRequestException("Invalid user Id");
 	    }
+		logger.info("Invoking ViewCustomerDetails Service");
 		HashMap<String,String> result  = bankCustomerService.findById(userId,customerId,cookieToken);
 		return new ResponseEntity<HashMap<String,String>>(result, controllerUtility.getHttpResponseStatus(result.get("statusCode")));
 	}
 	
 	@RequestMapping(value = SystemConstants.DETELECUSTOMERDETAILS, method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE,consumes = {"*/*"})
 	public ResponseEntity<HashMap<String, String>> deleteBankCustomer(@RequestParam(value = "userId") int userId,@PathVariable(name = "customerId") int customerId,@PathVariable(name = "cookieToken") String cookieToken){
+		logger.info("Inside DeleteCustomerDetails");
 		if(userId==0) {
+			logger.info("Bad Request Throwing Exception");
 	    	throw new BadRequestException("Invalid user Id");
 	    }
+		logger.info("Invoking DeleteCustomerDetails Service");
 		HashMap<String,String> result = bankCustomerService.deleteBankCustomer(userId,customerId,cookieToken);
 		return new ResponseEntity<HashMap<String,String>>(result, HttpStatus.OK);
 	}
 	
 	@RequestMapping(value = SystemConstants.UPDATECUSTOMERDETAILS, method = RequestMethod.PATCH, produces = MediaType.APPLICATION_JSON_VALUE,consumes = {"*/*"})
 	public ResponseEntity<HashMap<String, String>> updateBankCustomer(@RequestBody BankCustomer bankCustomer,@PathVariable(name = "customerId") int customerId,@PathVariable(name = "cookieToken") String cookieToken) {
+		logger.info("Inside UpdateCustomerDetails");
 		if(bankCustomer.getCustomerID()==0) {
+			logger.info("Bad Request Throwing Exception");
 	    	throw new BadRequestException("Invalid Customer Id");
 	    }
+		logger.info("Invoking UpdateCustomerDetails Service");
 		HashMap<String,String> result = bankCustomerService.updateBankCustomer(bankCustomer,customerId,cookieToken);
 		return new ResponseEntity<HashMap<String,String>>(result, HttpStatus.OK);
 	}

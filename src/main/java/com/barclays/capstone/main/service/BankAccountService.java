@@ -5,10 +5,13 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.barclays.capstone.main.controller.TransactionController;
 import com.barclays.capstone.main.exception.InvalidCustomerDataException;
 import com.barclays.capstone.main.model.BankAccount;
 import com.barclays.capstone.main.model.BankCustomer;
@@ -29,6 +32,8 @@ import com.google.common.hash.Hashing;
 @Service
 public class BankAccountService {
 
+	Logger logger = LoggerFactory.getLogger(TransactionController.class);
+	
 	@Autowired
 	AccountRepository accountRepo;
 
@@ -46,12 +51,13 @@ public class BankAccountService {
 
 	@Autowired
 	EmailSender email;
-
+	
+	
 
 	public void validateCustomerDetails(BankCustomer customer) {
 
 		String ErrorMessage = "";
-
+		logger.info("Validating Customer Details");
 		if (!Pattern.compile("[A-Z]{5}[0-9]{4}[A-Z]{1}").matcher(customer.getPanCard()).matches())
 			ErrorMessage += "Invalid PAN\n";
 		if (!Pattern.compile("[0-9]{12}").matcher(customer.getAadharNumber()).matches())
@@ -71,13 +77,13 @@ public class BankAccountService {
 	}
 
 	public HashMap<String, String> isExistingCustomer(String panCard, int userId, String cookieToken) {
-
+		
 		String status = "True";
 		String message = "No Customer Found with PAN: " + panCard;
 		HashMap<String, String> response = new HashMap<String, String>();
 
 		if (!serviceUtility.checkSession(userId, cookieToken)) {
-
+			logger.info("Validating Session");
 			status = "False";
 			message = "Session Expired!";
 			response.put("success", status);
@@ -87,6 +93,7 @@ public class BankAccountService {
 		}
 
 		if (!serviceUtility.isAdmin(userId, cookieToken)) {
+			logger.info("Validating User Role");
 			status = "False";
 			message = "Forbidden";
 			response.put("success", status);
@@ -97,6 +104,7 @@ public class BankAccountService {
 
 		BankCustomer customer = customerRepo.findBypanCard(panCard);
 		if (customer != null) {
+			logger.info("Found Customer with PAN:" + panCard +" returning Response.");
 			status = "true";
 			message = "Customer Found with PAN: " + panCard;
 			response.put("Customer Name", customer.getCustomerName());
@@ -111,9 +119,11 @@ public class BankAccountService {
 
 	public int generateCustomerId() {
 		Random random = new Random();
+		logger.info("Generating Customer ID");
 		while (true) {
 			int CustomerId = Integer.parseInt("1" + String.format("%05d", random.nextInt(10000)));
 			if (!customerRepo.findById(CustomerId).isPresent())
+				logger.info("Generated Customer ID: "+ String.valueOf(CustomerId));
 				return CustomerId;
 		}
 
@@ -127,7 +137,7 @@ public class BankAccountService {
 		String message = "Account Created Successfully!";
 
 		if (!serviceUtility.checkSession(userId, cookieToken)) {
-
+			logger.info("Validating Session");
 			status = "False";
 			message = "Session Expired!";
 			response.put("success", status);
@@ -136,7 +146,18 @@ public class BankAccountService {
 			return response;
 		}
 
+		if (!serviceUtility.isAdmin(userId, cookieToken)) {
+			logger.info("Validating User Role");
+			status = "False";
+			message = "Forbidden";
+			response.put("success", status);
+			response.put("message", message);
+			response.put("statusCode", "403");
+			return response;
+		}
+		
 		if (isExistingCustomer(customer.getPanCard(), userId, cookieToken).containsKey("Customer Id")) {
+			logger.info("Checking If PAN Card Exists");
 			status = "False";
 			message = "Customer PAN Exits!";
 			response.put("success", status);
@@ -145,14 +166,6 @@ public class BankAccountService {
 			return response;
 		}
 
-		if (!serviceUtility.isAdmin(userId, cookieToken)) {
-			status = "False";
-			message = "Forbidden";
-			response.put("success", status);
-			response.put("message", message);
-			response.put("statusCode", "403");
-			return response;
-		}
 
 		validateCustomerDetails(customer);
 
@@ -169,11 +182,11 @@ public class BankAccountService {
 		ImageUpload imgUpload = new ImageUpload();
 
 		try {
+			logger.info("Uploading Images");
 			imgUpload.setId(customer.getCustomerID());
 			imgUpload.setName(multipartFile.getOriginalFilename());
 			imgUpload.setType(multipartFile.getContentType());
 			imgUpload.setImage(multipartFile.getBytes());
-
 			imgRepo.save(imgUpload);
 
 		} catch (Exception e) {
@@ -181,7 +194,7 @@ public class BankAccountService {
 		}
 
 		String TempPassword = serviceUtility.generateRandomPassword(20);
-
+		logger.info("Sending Mail");
 		String mailBody = "Hello " + customer.getCustomerName() + "!\n"
 				+ "Welcome to BBI, Please find your Account Details.\n" + "\n Account Number: "
 				+ customerAccount.getAccountNumber() + "\n Customer Id: " + customer.getCustomerID()
@@ -209,6 +222,7 @@ public class BankAccountService {
 		String message = "Account Created Successfully!";
 
 		if (!serviceUtility.checkSession(userId, cookieToken)) {
+			logger.info("Validating Session");
 			status = "False";
 			message = "Session Expired!";
 			response.put("success", status);
@@ -218,6 +232,7 @@ public class BankAccountService {
 		}
 
 		if (!serviceUtility.isAdmin(userId, cookieToken)) {
+			logger.info("Validating User Role");
 			status = "False";
 			message = "Forbidden";
 			response.put("success", status);
@@ -227,6 +242,7 @@ public class BankAccountService {
 		}
 
 		if (!customerRepo.findById(customer.getCustomerId()).isPresent()) {
+			logger.info("Customer Not Found");
 			status = "False";
 			message = "Invaild CustomerId";
 			response.put("success", status);
