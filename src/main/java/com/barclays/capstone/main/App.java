@@ -2,6 +2,8 @@ package com.barclays.capstone.main;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
@@ -12,10 +14,14 @@ import org.springframework.web.servlet.HandlerInterceptor;
  */
 
 @SpringBootApplication
-public class App implements HandlerInterceptor {
-
-	public static void main(String[] args) {
-		SpringApplication.run(App.class, args);
-	}
-
+public class App extends SpringBootServletInitializer{
+ 
+    public static void main(String[] args) {
+        SpringApplication.run(App.class, args);
+    }
+ 
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+        return builder.sources(App.class);
+    }
 }
