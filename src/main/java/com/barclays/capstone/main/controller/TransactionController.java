@@ -46,9 +46,12 @@ public class TransactionController {
 	public ResponseEntity<HashMap<String, String>> cashDeposit(@PathVariable(name = "customerId") int customerId,
 			@PathVariable(name = "cookieToken") String cookieToken, @RequestParam String accountNumber,
 			@RequestParam int amount) {
+		logger.info("Inside Deposit Contoller");
 		if (accountNumber == "" || amount == 0) {
+			logger.info("Bad Request Throwing Exception");
 			throw new BadRequestException("Invalid Request Params");
 		}
+		logger.info("Invoking Deposit Contoller");
 		HashMap<String, String> result = operations.deposit(accountNumber, amount, customerId, cookieToken);
 		return new ResponseEntity<HashMap<String, String>>(result,
 				controllerUtility.getHttpResponseStatus(result.get("statusCode")));
@@ -66,9 +69,12 @@ public class TransactionController {
 	public ResponseEntity<HashMap<String, String>> cashWithdrawal(@PathVariable(name = "customerId") int customerId,
 			@PathVariable(name = "cookieToken") String cookieToken, @RequestParam String accountNumber,
 			@RequestParam int amount) {
+		logger.info("Inside cashWithdrawal Contoller");
 		if (accountNumber == "" || amount == 0) {
+			logger.info("Bad Request Throwing Exception");
 			throw new BadRequestException("Invalid Request Params");
 		}
+		logger.info("Invoking cashWithdrawal Contoller");
 		HashMap<String, String> result = operations.cashWithdrawal(accountNumber, amount, customerId, cookieToken);
 
 		return new ResponseEntity<HashMap<String, String>>(result,
@@ -88,11 +94,12 @@ public class TransactionController {
 	public ResponseEntity<HashMap<String, String>> transfer(@PathVariable(name = "customerId") int customerId,
 			@PathVariable(name = "cookieToken") String cookieToken, @RequestParam String fromAccountNumber,
 			@RequestParam String toAccountNumber, @RequestParam int amount) {
+		logger.info("Inside transfer Contoller");
 		if (fromAccountNumber == "" || toAccountNumber == "" || amount == 0) {
+			logger.info("Bad Request Throwing Exception");
 			throw new BadRequestException("Invalid Request Params");
 		}
-
-		logger.info("Transferring....................");
+		logger.info("Invoking transfer Contoller");
 		HashMap<String, String> result = operations.transfer(fromAccountNumber, toAccountNumber, amount, customerId,
 				cookieToken);
 		return new ResponseEntity<HashMap<String, String>>(result,
@@ -113,6 +120,7 @@ public class TransactionController {
 			@RequestParam Date fromTransactionDate, @RequestParam Date toTransactionDate) {
 
 		if (accountNumber == "" || fromTransactionDate == null || toTransactionDate == null) {
+			logger.info("Bad Request Throwing Exception");
 			throw new BadRequestException("Invalid Request Params");
 		}
 
@@ -134,6 +142,7 @@ public class TransactionController {
 			@PathVariable(name = "cookieToken") String cookieToken, @RequestParam String accountNumber) {
 
 		if (accountNumber == "") {
+			logger.info("Bad Request Throwing Exception");
 			throw new BadRequestException("Invalid Request Params");
 		}
 		logger.info("Transferring....................");

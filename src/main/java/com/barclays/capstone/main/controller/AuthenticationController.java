@@ -24,7 +24,7 @@ import com.barclays.capstone.main.service.BankAuthenticationService;
 /**
  * 
  * @author Divya Raisinghani, Harsh Das, Aakash Gouri Shankar
- * @Description Controllers for Authentication 
+ * @Description Controllers for Authentication
  * 
  */
 
@@ -32,38 +32,47 @@ import com.barclays.capstone.main.service.BankAuthenticationService;
 @RequestMapping("/account")
 public class AuthenticationController {
 
+	Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
+
 	@Autowired
 	BankAuthenticationService operations;
 
-	Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
+	ControllerUtility controllerUtility = new ControllerUtility();
 
 	@RequestMapping(value = SystemConstants.LOGIN, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<HashMap<String, String>> login(@RequestBody Credentials creds) {
+		logger.info("Inside login Contoller");
 		if (creds.getCustomerId() == 0 || creds.getPassword() == "") {
+			logger.info("Bad Request Throwing Exception");
 			throw new BadRequestException("Invalid Parameters");
 		}
-		logger.info("Loging in user..........");
+		logger.info("Invoking Loing Method Service");
 		HashMap<String, String> result = operations.login(creds);
 
-		return new ResponseEntity<HashMap<String, String>>(result, HttpStatus.OK);
+		return new ResponseEntity<HashMap<String, String>>(result,
+				controllerUtility.getHttpResponseStatus(result.get("statusCode")));
 	}
-	
-	@RequestMapping(value = SystemConstants.LOGOUT, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<HashMap<String, String>> logout(@PathVariable(name = "customerId") int customerId,@PathVariable(name = "cookieToken") String cookieToken) {
-	
-		HashMap<String, String> result = operations.logout(customerId,cookieToken);
 
-		return new ResponseEntity<HashMap<String, String>>(result, HttpStatus.OK);
+	@RequestMapping(value = SystemConstants.LOGOUT, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<HashMap<String, String>> logout(@PathVariable(name = "customerId") int customerId,
+			@PathVariable(name = "cookieToken") String cookieToken) {
+		logger.info("Inside Logout Contoller");
+		logger.info("Invoking Loing Logout Service");
+		HashMap<String, String> result = operations.logout(customerId, cookieToken);
+
+		return new ResponseEntity<HashMap<String, String>>(result,controllerUtility.getHttpResponseStatus(result.get("statusCode")));
 	}
 
 	@PostMapping(SystemConstants.CHANGEPASSWORD)
 	public ResponseEntity<HashMap<String, String>> changePassword(@RequestBody ChangePassword changePassword) {
-		if (changePassword.getCustomerId() == 0 || changePassword.getCurrentpassword() == "" || changePassword.getNewPassword()=="") {
+		if (changePassword.getCustomerId() == 0 || changePassword.getCurrentpassword() == ""
+				|| changePassword.getNewPassword() == "") {
 			throw new BadRequestException("Invalid Parameters");
 		}
-		logger.info("Changing password.....................");
+		logger.info("Inside ChangePassword Contoller");
+		logger.info("Invoking Loing changePassword Service");
 		HashMap<String, String> result = operations.changePassword(changePassword);
-		return new ResponseEntity<HashMap<String, String>>(result, HttpStatus.OK);
+		return new ResponseEntity<HashMap<String, String>>(result, controllerUtility.getHttpResponseStatus(result.get("statusCode")));
 	}
 
 }

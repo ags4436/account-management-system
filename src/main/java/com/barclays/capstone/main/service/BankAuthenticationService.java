@@ -34,6 +34,7 @@ public class BankAuthenticationService {
 		HashMap<String, String> response = new HashMap<String, String>();
 		String status = "False";
 		String message = "Login Failed, Incorrect Username or Password!";
+		String statusCode="403";
 		Credentials user = credentialsRepo.findBycustomerIdAndPassword(creds.getCustomerId(),
 				Hashing.sha256().hashString(creds.getPassword(), StandardCharsets.UTF_8).toString());
 		if (user != null) {
@@ -42,6 +43,7 @@ public class BankAuthenticationService {
 				message = "Change your Temporary Password and Login Again!";
 				response.put("success", status);
 				response.put("message", message);
+				response.put("statusCode", "401");
 				return response;
 			}
 			String cookieToken = Hashing.sha256()
@@ -53,10 +55,12 @@ public class BankAuthenticationService {
 			credentialsRepo.save(creds);
 			status = "True";
 			message = "Logged in successfully";
+			statusCode="200";
 			response.put("token", cookieToken);
 		}
 		response.put("success", status);
 		response.put("message", message);
+		response.put("statusCode", statusCode);
 
 		return response;
 	}
@@ -65,6 +69,7 @@ public class BankAuthenticationService {
 
 		String status = "False";
 		String message = "Falied to Change Password!";
+		String statusCode="403";
 		HashMap<String, String> response = new HashMap<String, String>();
 		Credentials user = credentialsRepo.findBycustomerIdAndPassword(password.getCustomerId(),
 				Hashing.sha256().hashString(password.getCurrentpassword(), StandardCharsets.UTF_8).toString());
@@ -81,9 +86,11 @@ public class BankAuthenticationService {
 			credentialsRepo.save(creds);
 			status = "True";
 			message = "Successfully Changed Password! Login Again for Security Purpose";
+			statusCode="200";
 		}
 		response.put("success", status);
 		response.put("message", message);
+		response.put("statusCode", statusCode);
 		return response;
 	}
 
