@@ -113,6 +113,7 @@ public class BankAuthenticationService {
 			credentialsRepo.save(creds);
 			message = "Logout Successful!";
 			status = "True";
+			response.put("statusCode", "200");
 		}
 		response.put("success", status);
 		response.put("message", message);
