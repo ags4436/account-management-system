@@ -23,4 +23,5 @@ public class SystemConstants {
 	public static final String EXPORT = "/export/{customerId}/{cookieToken}";
 	public static final String MINISTATEMENT = "/ministatement/{customerId}/{cookieToken}";
 	public static final String LOGOUT = "/logout/{customerId}/{cookieToken}";
+	public static final String BUILD_TEST="Testing Jenkins Build";
 }
